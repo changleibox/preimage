@@ -1,7 +1,6 @@
 name: preimage
 description: 图片预览
 version: 1.0.0
-author: changlei
 homepage: https://github.com/changleibox/preimage
 
 environment:
