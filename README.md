@@ -1,6 +1,6 @@
 # preimage
 
-A new Flutter plugin.
+图片预览，支持Android、iOS、Linux、macOS
 
 ## Getting Started
 
