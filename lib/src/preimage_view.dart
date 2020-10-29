@@ -374,6 +374,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
   }
 
   _onVerticalDragStart(DragStartDetails details) {
+    _pageController.jumpToPage(_currentIndex);
     _startPosition = details.localPosition;
     DragStartNotification(details: details).dispatch(context);
   }
