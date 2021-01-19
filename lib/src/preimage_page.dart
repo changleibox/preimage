@@ -34,7 +34,9 @@ class Preimage {
     PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
     IndexedWidgetBuilder bottomBarBuilder,
     ValueChanged<ImageOptions> onLongPressed,
+    bool rootNavigator = false,
   }) {
+    assert(rootNavigator != null);
     final _images = images?.where((image) => image != null && image.isNotEmpty)?.toList();
     if (_images == null || _images.isEmpty) {
       return Future.value();
@@ -49,6 +51,7 @@ class Preimage {
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
       ),
+      rootNavigator: rootNavigator,
     );
   }
 
@@ -58,7 +61,9 @@ class Preimage {
     PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
     WidgetBuilder bottomBarBuilder,
     ValueChanged<ImageOptions> onLongPressed,
+    bool rootNavigator = false,
   }) {
+    assert(rootNavigator != null);
     if (image == null || image.isEmpty) {
       return Future.value();
     }
@@ -70,12 +75,13 @@ class Preimage {
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
       ),
+      rootNavigator: rootNavigator,
     );
   }
 
-  static Future<T> _push<T>(BuildContext context, Widget widget) {
-    return Navigator.push(
-      context,
+  static Future<T> _push<T>(BuildContext context, Widget widget, {bool rootNavigator = false}) {
+    assert(rootNavigator != null);
+    return Navigator.of(context, rootNavigator: rootNavigator).push(
       PreimageRoute(
         opaque: false,
         fullscreenDialog: false,
