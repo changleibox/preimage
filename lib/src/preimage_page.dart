@@ -196,7 +196,8 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   bool _onScrollNotification(ScrollNotification notification) {
     final metrics = notification.metrics;
-    if (!metrics.hasPixels || !metrics.hasContentDimensions) {
+    if (!metrics.hasPixels || !metrics.hasContentDimensions || widget.onOverEdge == null) {
+      _notifyOverEdge = true;
       return false;
     }
     if (notification is UserScrollNotification && !metrics.outOfRange) {
