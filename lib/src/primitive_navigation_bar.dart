@@ -10,13 +10,7 @@ import 'package:preimage/src/dimens.dart';
 ///
 /// 一个简陋的navigationBar，可以自定义背景
 class PrimitiveNavigationBar extends StatefulWidget implements ObstructingPreferredSizeWidget {
-  final Widget middle;
-  final Widget leading;
-  final BoxDecoration decoration;
-  final EdgeInsetsDirectional padding;
-  final Brightness brightness;
-  final Widget trailing;
-
+  /// 一个简陋的navigationBar，可以自定义背景
   const PrimitiveNavigationBar({
     Key key,
     this.middle,
@@ -30,11 +24,29 @@ class PrimitiveNavigationBar extends StatefulWidget implements ObstructingPrefer
     this.trailing,
   }) : super(key: key);
 
+  /// 显示在中间
+  final Widget middle;
+
+  /// 开始位置
+  final Widget leading;
+
+  /// decoration
+  final BoxDecoration decoration;
+
+  /// 边距
+  final EdgeInsetsDirectional padding;
+
+  /// 亮度
+  final Brightness brightness;
+
+  /// 结尾
+  final Widget trailing;
+
   @override
   _PrimitiveNavigationBarState createState() => _PrimitiveNavigationBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(navBarPersistentHeight);
+  Size get preferredSize => const Size.fromHeight(navBarPersistentHeight);
 
   @override
   bool shouldFullyObstruct(BuildContext context) {
@@ -45,7 +57,7 @@ class PrimitiveNavigationBar extends StatefulWidget implements ObstructingPrefer
 class _PrimitiveNavigationBarState extends State<PrimitiveNavigationBar> {
   @override
   Widget build(BuildContext context) {
-    final Brightness newBrightness = widget.brightness ?? Brightness.light;
+    final newBrightness = widget.brightness ?? Brightness.light;
     SystemUiOverlayStyle overlayStyle;
     switch (newBrightness) {
       case Brightness.dark:
@@ -56,7 +68,7 @@ class _PrimitiveNavigationBarState extends State<PrimitiveNavigationBar> {
         overlayStyle = SystemUiOverlayStyle.dark;
         break;
     }
-    Widget middle = widget.middle;
+    var middle = widget.middle;
     if (middle != null) {
       middle = DefaultTextStyle(
         style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 ///
 /// 自定义图片预览路由
 class PreimageRoute<T> extends PageRoute<T> {
+  /// 图片预览路由
   PreimageRoute({
     @required this.builder,
     this.opaque = true,
@@ -23,6 +24,7 @@ class PreimageRoute<T> extends PageRoute<T> {
           fullscreenDialog: fullscreenDialog,
         );
 
+  /// 构建内容
   final WidgetBuilder builder;
 
   @override
@@ -44,7 +46,8 @@ class PreimageRoute<T> extends PageRoute<T> {
   final bool maintainState;
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions(
+      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
     return FadeTransition(
       opacity: Tween(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
@@ -58,7 +61,7 @@ class PreimageRoute<T> extends PageRoute<T> {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    final Widget child = builder(context);
+    final child = builder(context);
     final Widget result = Semantics(
       scopesRoute: true,
       explicitChildNodes: true,

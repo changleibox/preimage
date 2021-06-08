@@ -12,14 +12,18 @@ import 'package:photo_view/photo_view_gallery.dart';
 const double _kMaxDragDistance = 200;
 const Duration _kDuration = Duration(milliseconds: 300);
 
+/// 拖拽通知
 class DragNotification extends Notification {}
 
+/// 拖拽开始通知
 class DragStartNotification extends DragNotification {
-  final DragStartDetails details;
-
+  /// 拖拽开始通知
   DragStartNotification({
     @required this.details,
   }) : assert(details != null);
+
+  /// 拖拽的详细信息
+  final DragStartDetails details;
 
   @override
   bool operator ==(Object other) =>
@@ -37,16 +41,9 @@ class DragStartNotification extends DragNotification {
   }
 }
 
+/// 拖拽时的通知
 class DragUpdateNotification extends DragNotification {
-  final DragUpdateDetails details;
-  final Offset startPosition;
-  final Offset translationPosition;
-  final double scale;
-  final double opacity;
-  final double dragDistance;
-  final double navigationBarOffsetPixels;
-  final double bottomBarOffsetPixels;
-
+  /// 拖拽时的通知
   DragUpdateNotification({
     @required this.details,
     @required this.startPosition,
@@ -64,6 +61,30 @@ class DragUpdateNotification extends DragNotification {
         assert(dragDistance != null),
         assert(navigationBarOffsetPixels != null),
         assert(bottomBarOffsetPixels != null);
+
+  /// 拖拽的详细信息
+  final DragUpdateDetails details;
+
+  /// 开始的位置
+  final Offset startPosition;
+
+  /// 移动的position
+  final Offset translationPosition;
+
+  /// 缩放级别
+  final double scale;
+
+  /// 透明度变化
+  final double opacity;
+
+  /// 拖拽的距离
+  final double dragDistance;
+
+  /// navigationBar的距离变化
+  final double navigationBarOffsetPixels;
+
+  /// bottomBar的距离变化
+  final double bottomBarOffsetPixels;
 
   @override
   bool operator ==(Object other) =>
@@ -105,12 +126,15 @@ class DragUpdateNotification extends DragNotification {
   }
 }
 
+/// 拖拽结束通知
 class DragEndNotification extends DragNotification {
-  final DragEndDetails details;
-
+  /// 拖拽结束通知
   DragEndNotification({
     @required this.details,
   }) : assert(details != null);
+
+  /// 拖拽的详细信息
+  final DragEndDetails details;
 
   @override
   bool operator ==(Object other) =>
@@ -128,41 +152,55 @@ class DragEndNotification extends DragNotification {
   }
 }
 
+/// 构建navigationBar
 typedef NavigationBarBuilder = Widget Function(
   BuildContext context,
   int index,
   int count,
 );
 
+/// 构建Provider
 typedef ImageProviderBuilder = ImageProvider Function(
   BuildContext context,
   int index,
 );
 
+/// 拖拽结束回调
 typedef DragEndCallback = bool Function(
   double dragDistance,
   double velocity,
 );
 
+/// 图片
 class ImageOptions {
-  final String url;
-  final Size thumbnailSize;
-  final String tag;
-
-  ImageOptions({
+  /// 图片
+  const ImageOptions({
     @required this.url,
     this.thumbnailSize,
     this.tag,
   });
 
+  /// 图片地址，可以是远程路径和本地路径
+  final String url;
+
+  /// 缩略图大小
+  final Size thumbnailSize;
+
+  /// hero的tag
+  final String tag;
+
+  /// 是否为空
   bool get isEmpty => url == null || url.isEmpty;
 
+  /// 是否不为空
   bool get isNotEmpty => url != null && url.isNotEmpty;
 
-  ImageOptions copyWith({String url, String tag}) {
+  /// 复制一个
+  ImageOptions copyWith({String url, String tag, Size thumbnailSize}) {
     return ImageOptions(
       url: url ?? this.url,
       tag: tag ?? this.tag,
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
     );
   }
 }
@@ -192,14 +230,9 @@ class _HeroTag {
   }
 }
 
+/// hero
 class PreimageHero extends StatelessWidget {
-  final String tag;
-  final Widget child;
-  final CreateRectTween createRectTween;
-  final HeroFlightShuttleBuilder flightShuttleBuilder;
-  final HeroPlaceholderBuilder placeholderBuilder;
-  final bool transitionOnUserGestures;
-
+  /// hero
   const PreimageHero({
     Key key,
     @required this.tag,
@@ -212,6 +245,24 @@ class PreimageHero extends StatelessWidget {
         assert(transitionOnUserGestures != null),
         super(key: key);
 
+  /// Hero.tag
+  final String tag;
+
+  /// child
+  final Widget child;
+
+  /// Hero.createRectTween
+  final CreateRectTween createRectTween;
+
+  /// Hero.flightShuttleBuilder
+  final HeroFlightShuttleBuilder flightShuttleBuilder;
+
+  /// Hero.placeholderBuilder
+  final HeroPlaceholderBuilder placeholderBuilder;
+
+  /// Hero.placeholderBuilder
+  final bool transitionOnUserGestures;
+
   static Widget _buildPlaceholder(BuildContext context, Size heroSize, Widget child) {
     return child;
   }
@@ -223,11 +274,11 @@ class PreimageHero extends StatelessWidget {
     }
     return Hero(
       tag: _buildHeroTag(tag),
-      child: child,
       createRectTween: createRectTween,
       flightShuttleBuilder: flightShuttleBuilder,
       placeholderBuilder: placeholderBuilder,
       transitionOnUserGestures: transitionOnUserGestures,
+      child: child,
     );
   }
 
@@ -239,21 +290,9 @@ class PreimageHero extends StatelessWidget {
   }
 }
 
+/// 图片预览
 class PreimageView extends StatefulWidget {
-  final int initialIndex;
-  final List<ImageOptions> images;
-  final ValueChanged<int> onPageChanged;
-  final NavigationBarBuilder navigationBarBuilder;
-  final IndexedWidgetBuilder bottomBarBuilder;
-  final ValueChanged<ImageOptions> onPressed;
-  final ValueChanged<ImageOptions> onLongPressed;
-  final ValueChanged<PhotoViewScaleState> onScaleStateChanged;
-  final LoadingBuilder loadingBuilder;
-  final ImageProviderBuilder imageProviderBuilder;
-  final double dragReferenceDistance;
-  final Duration duration;
-  final DragEndCallback onDragEndCallback;
-
+  /// 图片预览
   const PreimageView({
     Key key,
     this.initialIndex = 0,
@@ -275,6 +314,45 @@ class PreimageView extends StatefulWidget {
         assert(dragReferenceDistance != null && dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
         assert(duration != null),
         super(key: key);
+
+  /// 初始index
+  final int initialIndex;
+
+  /// 图片组
+  final List<ImageOptions> images;
+
+  /// 图片左右切换时回调
+  final ValueChanged<int> onPageChanged;
+
+  /// 构建navigationBar
+  final NavigationBarBuilder navigationBarBuilder;
+
+  /// 构建bottomBar
+  final IndexedWidgetBuilder bottomBarBuilder;
+
+  /// 点击
+  final ValueChanged<ImageOptions> onPressed;
+
+  /// 长按
+  final ValueChanged<ImageOptions> onLongPressed;
+
+  /// 缩放回调
+  final ValueChanged<PhotoViewScaleState> onScaleStateChanged;
+
+  /// 构建loading
+  final LoadingBuilder loadingBuilder;
+
+  /// 构建ImageProvider
+  final ImageProviderBuilder imageProviderBuilder;
+
+  /// 组大拖拽距离
+  final double dragReferenceDistance;
+
+  /// 页面可动元素的动画时长
+  final Duration duration;
+
+  /// 拖拽结束回调
+  final DragEndCallback onDragEndCallback;
 
   @override
   _PreimageViewState createState() => _PreimageViewState();
@@ -317,7 +395,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     super.dispose();
   }
 
-  _onPageChanged(int index) {
+  void _onPageChanged(int index) {
     _currentIndex = index;
     setState(() {});
     if (widget.onPageChanged != null) {
@@ -325,15 +403,15 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     }
   }
 
-  _onTap() {
-    var imageOptions = widget.images[_currentIndex];
+  void _onTap() {
+    final imageOptions = widget.images[_currentIndex];
     if (imageOptions != null && widget.onPressed != null) {
       widget.onPressed(imageOptions);
     }
   }
 
-  _onLongPress() {
-    var imageOptions = widget.images[_currentIndex];
+  void _onLongPress() {
+    final imageOptions = widget.images[_currentIndex];
     if (imageOptions != null && widget.onLongPressed != null) {
       widget.onLongPressed(imageOptions);
     }
@@ -343,7 +421,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     return key?.currentContext?.size?.height ?? 0.0;
   }
 
-  _onScaleStateChanged(PhotoViewScaleState scaleState) {
+  void _onScaleStateChanged(PhotoViewScaleState scaleState) {
     if (_translationPosition != Offset.zero) {
       return;
     }
@@ -373,21 +451,21 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     }
   }
 
-  _onVerticalDragStart(DragStartDetails details) {
+  void _onVerticalDragStart(DragStartDetails details) {
     _pageController.jumpToPage(_currentIndex);
     _startPosition = details.localPosition;
     DragStartNotification(details: details).dispatch(context);
   }
 
-  _onVerticalDragUpdate(DragUpdateDetails details) {
-    var size = MediaQuery.of(context).size;
-    var positionOffset = details.localPosition - _startPosition;
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    final size = MediaQuery.of(context).size;
+    final positionOffset = details.localPosition - _startPosition;
     _dragDistance = positionOffset.dy.abs();
     _scaleOffset = _dragDistance / (size.height * 2);
     _translationPosition = positionOffset + _startPosition * _scaleOffset;
-    var dragOffset = _dragDistance / widget.dragReferenceDistance;
-    _opacity = (1.0 - dragOffset).clamp(0.0, 1.0);
-    var barOffset = -dragOffset.clamp(0.0, 1.0);
+    final dragOffset = _dragDistance / widget.dragReferenceDistance;
+    _opacity = (1.0 - dragOffset).clamp(0.0, 1.0).toDouble();
+    final barOffset = -dragOffset.clamp(0.0, 1.0);
     _navigationBarOffsetPixels = _computeBarHeight(_navigationBarKey) * barOffset;
     _bottomBarOffsetPixels = _computeBarHeight(_bottomBarKey) * barOffset;
     setState(() {});
@@ -403,16 +481,16 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     ).dispatch(context);
   }
 
-  _onVerticalDragEnd(DragEndDetails details) {
-    var dragDistance = _translationPosition.dy < 0 ? -_dragDistance : _dragDistance;
-    var onDragEndCallback = widget.onDragEndCallback;
+  void _onVerticalDragEnd(DragEndDetails details) {
+    final dragDistance = _translationPosition.dy < 0 ? -_dragDistance : _dragDistance;
+    final onDragEndCallback = widget.onDragEndCallback;
     if (onDragEndCallback == null || !onDragEndCallback(dragDistance, details.primaryVelocity)) {
       _reset();
       DragEndNotification(details: details).dispatch(context);
     }
   }
 
-  _reset() {
+  void _reset() {
     _startPosition = Offset.zero;
     _translationPosition = Offset.zero;
     _scaleOffset = 0.0;
@@ -465,10 +543,10 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    var scale = 1.0 - _scaleOffset;
-    var positionOffset = _translationPosition;
-    var duration = positionOffset == Offset.zero ? widget.duration : Duration.zero;
-    var queryData = MediaQuery.of(context);
+    final scale = 1.0 - _scaleOffset;
+    final positionOffset = _translationPosition;
+    final duration = positionOffset == Offset.zero ? widget.duration : Duration.zero;
+    final queryData = MediaQuery.of(context);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onVerticalDragStart: _onVerticalDragStart,
@@ -513,7 +591,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
                   BoxShadow(
                     color: CupertinoColors.black.withOpacity(0.6),
                     blurRadius: 0.8,
-                    offset: Offset(0, 1.0),
+                    offset: const Offset(0, 1.0),
                   ),
                 ],
               ),

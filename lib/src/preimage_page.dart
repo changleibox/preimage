@@ -18,6 +18,7 @@ const double _kMaxDragVelocity = 100;
 const double _kMaxDragDistance = 200;
 const Duration _kDuration = Duration(milliseconds: 300);
 
+/// 构建navigationBar
 typedef PreimageNavigationBarBuilder = Widget Function(
   BuildContext context,
   int index,
@@ -25,7 +26,11 @@ typedef PreimageNavigationBarBuilder = Widget Function(
   VoidCallback onBackPressed,
 );
 
+/// 图片预览
 class Preimage {
+  const Preimage._();
+
+  /// 预览一组图片
   static Future<T> preview<T>(
     BuildContext context, {
     int initialIndex = 0,
@@ -57,6 +62,7 @@ class Preimage {
     );
   }
 
+  /// 预览单张图片
   static Future<T> previewSingle<T>(
     BuildContext context,
     ImageOptions image, {
@@ -106,19 +112,13 @@ class Preimage {
   }
 }
 
+/// 图片预览
 class PreimagePage extends StatefulWidget {
-  final int initialIndex;
-  final List<ImageOptions> images;
-  final ValueChanged<int> onIndexChanged;
-  final PreimageNavigationBarBuilder navigationBarBuilder;
-  final IndexedWidgetBuilder bottomBarBuilder;
-  final ValueChanged<ImageOptions> onLongPressed;
-  final ValueChanged<Edge> onOverEdge;
-
-  PreimagePage({
+  /// 构造函数
+  const PreimagePage({
     Key key,
     this.initialIndex = 0,
-    this.images,
+    @required this.images,
     this.onIndexChanged,
     this.navigationBarBuilder,
     this.bottomBarBuilder,
@@ -128,6 +128,7 @@ class PreimagePage extends StatefulWidget {
         assert(initialIndex != null && initialIndex >= 0 && initialIndex < images.length),
         super(key: key);
 
+  /// 预览单张图片
   factory PreimagePage.single(
     ImageOptions image, {
     WidgetBuilder bottomBarBuilder,
@@ -141,6 +142,27 @@ class PreimagePage extends StatefulWidget {
       bottomBarBuilder: bottomBarBuilder == null ? null : (context, index) => bottomBarBuilder(context),
     );
   }
+
+  /// 初始的索引
+  final int initialIndex;
+
+  /// 需要显示的图片组
+  final List<ImageOptions> images;
+
+  /// 索引变化的时候
+  final ValueChanged<int> onIndexChanged;
+
+  /// 构建预览页面的navigationBar
+  final PreimageNavigationBarBuilder navigationBarBuilder;
+
+  /// 构建预览页面的bottomBar
+  final IndexedWidgetBuilder bottomBarBuilder;
+
+  /// 长按回调
+  final ValueChanged<ImageOptions> onLongPressed;
+
+  /// 超过边界回调
+  final ValueChanged<Edge> onOverEdge;
 
   @override
   _PreimagePageState createState() => _PreimagePageState();
@@ -157,22 +179,22 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     _currentIndex = widget.initialIndex;
   }
 
-  _onPageChanged(int index) {
+  void _onPageChanged(int index) {
     _currentIndex = index;
   }
 
-  _onBackPressed() {
+  void _onBackPressed() {
     if (widget.onIndexChanged != null) {
       widget.onIndexChanged(_currentIndex);
     }
     Navigator.maybePop(context, _currentIndex);
   }
 
-  _onPressed(ImageOptions options) {
+  void _onPressed(ImageOptions options) {
     _onBackPressed();
   }
 
-  _onLongPressed(ImageOptions options) {
+  void _onLongPressed(ImageOptions options) {
     if (widget.onLongPressed != null) {
       widget.onLongPressed(options);
     }
@@ -258,8 +280,8 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    var duration = _opacity == 1.0 ? _kDuration : Duration.zero;
-    var queryData = MediaQuery.of(context);
+    final duration = _opacity == 1.0 ? _kDuration : Duration.zero;
+    final queryData = MediaQuery.of(context);
     return CupertinoTheme(
       data: CupertinoTheme.of(context).copyWith(
         primaryColor: CupertinoColors.white,
@@ -305,10 +327,6 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 }
 
 class _DefaultNavigationBar extends StatelessWidget {
-  final int currentIndex;
-  final int count;
-  final VoidCallback onBackPressed;
-
   const _DefaultNavigationBar({
     Key key,
     @required this.currentIndex,
@@ -317,26 +335,34 @@ class _DefaultNavigationBar extends StatelessWidget {
   })  : assert(currentIndex != null && count != null && currentIndex < count),
         super(key: key);
 
+  final int currentIndex;
+  final int count;
+  final VoidCallback onBackPressed;
+
   @override
   Widget build(BuildContext context) {
     return PrimitiveNavigationBar(
       middle: Text('${currentIndex + 1}/$count'),
-      padding: EdgeInsetsDirectional.only(
+      padding: const EdgeInsetsDirectional.only(
         start: 10,
         end: 10,
       ),
       brightness: Brightness.dark,
       leading: CupertinoButton(
-        child: Text('关闭'),
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.zero,
         onPressed: onBackPressed,
+        child: const Text('关闭'),
       ),
     );
   }
 }
 
+/// 边界类型
 enum Edge {
+  /// 起始
   start,
+
+  /// 结束
   end,
 }

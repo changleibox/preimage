@@ -2,12 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:preimage/preimage.dart';
 
-const String testAvatarUrl = 'https://p5.gexing.com/GSF/shaitu/20181118/1427/5bf1064593f44.jpg';
+const String _testAvatarUrl = 'https://p5.gexing.com/GSF/shaitu/20181118/1427/5bf1064593f44.jpg';
 
 void main() {
   runApp(MyApp());
 }
 
+/// app
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -25,11 +26,11 @@ class _MyAppState extends State<MyApp> {
 class _PluginExamplePage extends StatelessWidget {
   Widget _buildBottomBar(BuildContext context, int index) {
     if (index % 4 == 1) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Container(
       height: index.isEven ? null : MediaQuery.of(context).size.height / 2,
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 10,
       ),
@@ -67,17 +68,17 @@ class _PluginExamplePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final images = List.generate(10, (index) {
       return ImageOptions(
-        url: testAvatarUrl,
-        tag: [testAvatarUrl, index].join('_'),
+        url: _testAvatarUrl,
+        tag: [_testAvatarUrl, index].join('_'),
       );
     });
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('Plugin example app'),
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Plugin example app'),
       ),
       child: Center(
         child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 5,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
@@ -90,7 +91,7 @@ class _PluginExamplePage extends StatelessWidget {
               padding: EdgeInsets.zero,
               minSize: 0,
               onPressed: () {
-                Preimage.preview(
+                Preimage.preview<void>(
                   context,
                   images: images,
                   initialIndex: index,
