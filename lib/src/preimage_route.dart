@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 import 'package:flutter/cupertino.dart';
 
 /// Created by box on 2020/4/22.

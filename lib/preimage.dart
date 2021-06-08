@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 CHANGLEI. All rights reserved.
+ */
+
 library preimage;
 
 export 'src/preimage_page.dart' show Preimage, PreimageNavigationBarBuilder, Edge;
