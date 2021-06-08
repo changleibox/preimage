@@ -34,6 +34,7 @@ class Preimage {
     PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
     IndexedWidgetBuilder bottomBarBuilder,
     ValueChanged<ImageOptions> onLongPressed,
+    ValueChanged<Edge> onOverEdge,
     bool rootNavigator = false,
   }) {
     assert(rootNavigator != null);
@@ -50,6 +51,7 @@ class Preimage {
         navigationBarBuilder: navigationBarBuilder,
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
+        onOverEdge: onOverEdge,
       ),
       rootNavigator: rootNavigator,
     );
