@@ -111,6 +111,7 @@ class PreimagePage extends StatefulWidget {
   final PreimageNavigationBarBuilder navigationBarBuilder;
   final IndexedWidgetBuilder bottomBarBuilder;
   final ValueChanged<ImageOptions> onLongPressed;
+  final ValueChanged<Edge> onOverEdge;
 
   PreimagePage({
     Key key,
@@ -120,6 +121,7 @@ class PreimagePage extends StatefulWidget {
     this.navigationBarBuilder,
     this.bottomBarBuilder,
     this.onLongPressed,
+    this.onOverEdge,
   })  : assert(images != null && images.length > 0),
         assert(initialIndex != null && initialIndex >= 0 && initialIndex < images.length),
         super(key: key);
@@ -145,6 +147,7 @@ class PreimagePage extends StatefulWidget {
 class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   double _opacity = 1.0;
+  bool _notifyOverEdge = true;
 
   @override
   void initState() {
@@ -188,6 +191,30 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
       _opacity = 1.0;
     }
     setState(() {});
+    return false;
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    final metrics = notification.metrics;
+    if (!metrics.hasPixels || !metrics.hasContentDimensions) {
+      return false;
+    }
+    if (notification is UserScrollNotification && !metrics.outOfRange) {
+      _notifyOverEdge = true;
+    }
+    if (notification is! ScrollUpdateNotification || !_notifyOverEdge) {
+      return false;
+    }
+    final pixels = metrics.pixels;
+    final minScrollExtent = metrics.minScrollExtent;
+    final maxScrollExtent = metrics.maxScrollExtent;
+    if (pixels < minScrollExtent) {
+      _notifyOverEdge = false;
+      widget.onOverEdge?.call(Edge.start);
+    } else if (pixels > maxScrollExtent) {
+      _notifyOverEdge = false;
+      widget.onOverEdge?.call(Edge.end);
+    }
     return false;
   }
 
@@ -248,19 +275,22 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
               color: CupertinoColors.black.withOpacity(_opacity),
               child: NotificationListener<DragNotification>(
                 onNotification: _onDragNotification,
-                child: PreimageView(
-                  initialIndex: widget.initialIndex,
-                  images: widget.images,
-                  imageProviderBuilder: _buildImageProvider,
-                  navigationBarBuilder: _buildNavigationBar,
-                  bottomBarBuilder: widget.bottomBarBuilder,
-                  loadingBuilder: _buildLoading,
-                  duration: _kDuration,
-                  dragReferenceDistance: _kMaxDragDistance,
-                  onPressed: _onPressed,
-                  onLongPressed: _onLongPressed,
-                  onPageChanged: _onPageChanged,
-                  onDragEndCallback: _onDragEndCallback,
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: _onScrollNotification,
+                  child: PreimageView(
+                    initialIndex: widget.initialIndex,
+                    images: widget.images,
+                    imageProviderBuilder: _buildImageProvider,
+                    navigationBarBuilder: _buildNavigationBar,
+                    bottomBarBuilder: widget.bottomBarBuilder,
+                    loadingBuilder: _buildLoading,
+                    duration: _kDuration,
+                    dragReferenceDistance: _kMaxDragDistance,
+                    onPressed: _onPressed,
+                    onLongPressed: _onLongPressed,
+                    onPageChanged: _onPageChanged,
+                    onDragEndCallback: _onDragEndCallback,
+                  ),
                 ),
               ),
             ),
@@ -301,4 +331,9 @@ class _DefaultNavigationBar extends StatelessWidget {
       ),
     );
   }
+}
+
+enum Edge {
+  start,
+  end,
 }
