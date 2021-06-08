@@ -96,6 +96,9 @@ class _PluginExamplePage extends StatelessWidget {
                   images: images,
                   initialIndex: index,
                   bottomBarBuilder: _buildBottomBar,
+                  onOverEdge: (value) {
+                    print(value);
+                  },
                 );
               },
               child: PreimageHero(

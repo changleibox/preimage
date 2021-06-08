@@ -227,7 +227,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     if (notification is UserScrollNotification && !metrics.outOfRange) {
       _notifyOverEdge = true;
     }
-    if (notification is! ScrollUpdateNotification || !_notifyOverEdge) {
+    if ((notification is! ScrollUpdateNotification && notification is! OverscrollNotification) || !_notifyOverEdge) {
       return false;
     }
     final pixels = metrics.pixels;
@@ -239,6 +239,10 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     } else if (pixels > maxScrollExtent) {
       _notifyOverEdge = false;
       widget.onOverEdge?.call(Edge.end);
+    } else if (notification is OverscrollNotification) {
+      _notifyOverEdge = false;
+      final overscroll = notification.overscroll;
+      widget.onOverEdge?.call(overscroll.isNegative ? Edge.start : Edge.end);
     }
     return false;
   }
