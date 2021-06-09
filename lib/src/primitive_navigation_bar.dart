@@ -12,7 +12,7 @@ import 'package:preimage/src/dimens.dart';
 class PrimitiveNavigationBar extends StatefulWidget implements ObstructingPreferredSizeWidget {
   /// 一个简陋的navigationBar，可以自定义背景
   const PrimitiveNavigationBar({
-    Key key,
+    Key? key,
     this.middle,
     this.leading,
     this.decoration,
@@ -25,22 +25,22 @@ class PrimitiveNavigationBar extends StatefulWidget implements ObstructingPrefer
   }) : super(key: key);
 
   /// 显示在中间
-  final Widget middle;
+  final Widget? middle;
 
   /// 开始位置
-  final Widget leading;
+  final Widget? leading;
 
   /// decoration
-  final BoxDecoration decoration;
+  final BoxDecoration? decoration;
 
   /// 边距
-  final EdgeInsetsDirectional padding;
+  final EdgeInsetsDirectional? padding;
 
   /// 亮度
-  final Brightness brightness;
+  final Brightness? brightness;
 
   /// 结尾
-  final Widget trailing;
+  final Widget? trailing;
 
   @override
   _PrimitiveNavigationBarState createState() => _PrimitiveNavigationBarState();
@@ -86,7 +86,7 @@ class _PrimitiveNavigationBarState extends State<PrimitiveNavigationBar> {
 
     if (widget.padding != null) {
       toolbar = Padding(
-        padding: widget.padding,
+        padding: widget.padding!,
         child: toolbar,
       );
     }
@@ -108,7 +108,7 @@ class _PrimitiveNavigationBarState extends State<PrimitiveNavigationBar> {
 
     if (widget.decoration != null) {
       toolbar = DecoratedBox(
-        decoration: widget.decoration,
+        decoration: widget.decoration!,
         child: toolbar,
       );
     }

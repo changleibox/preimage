@@ -10,20 +10,15 @@ import 'package:flutter/cupertino.dart';
 class PreimageRoute<T> extends PageRoute<T> {
   /// 图片预览路由
   PreimageRoute({
-    @required this.builder,
+    required this.builder,
     this.opaque = true,
     this.barrierDismissible = false,
     this.barrierColor,
     this.barrierLabel,
     this.maintainState = true,
-    RouteSettings settings,
+    RouteSettings? settings,
     bool fullscreenDialog = false,
-  })  : assert(builder != null),
-        assert(opaque != null),
-        assert(barrierDismissible != null),
-        assert(maintainState != null),
-        assert(fullscreenDialog != null),
-        super(
+  }) : super(
           settings: settings,
           fullscreenDialog: fullscreenDialog,
         );
@@ -41,10 +36,10 @@ class PreimageRoute<T> extends PageRoute<T> {
   final bool barrierDismissible;
 
   @override
-  final Color barrierColor;
+  final Color? barrierColor;
 
   @override
-  final String barrierLabel;
+  final String? barrierLabel;
 
   @override
   final bool maintainState;
@@ -71,15 +66,6 @@ class PreimageRoute<T> extends PageRoute<T> {
       explicitChildNodes: true,
       child: child,
     );
-    assert(() {
-      if (child == null) {
-        throw FlutterError.fromParts(<DiagnosticsNode>[
-          ErrorSummary('The builder for route "${settings.name}" returned null.'),
-          ErrorDescription('Route builders must never return null.'),
-        ]);
-      }
-      return true;
-    }());
     return result;
   }
 

@@ -19,8 +19,8 @@ class DragNotification extends Notification {}
 class DragStartNotification extends DragNotification {
   /// 拖拽开始通知
   DragStartNotification({
-    @required this.details,
-  }) : assert(details != null);
+    required this.details,
+  });
 
   /// 拖拽的详细信息
   final DragStartDetails details;
@@ -45,22 +45,15 @@ class DragStartNotification extends DragNotification {
 class DragUpdateNotification extends DragNotification {
   /// 拖拽时的通知
   DragUpdateNotification({
-    @required this.details,
-    @required this.startPosition,
-    @required this.translationPosition,
-    @required this.scale,
-    @required this.opacity,
-    @required this.dragDistance,
-    @required this.navigationBarOffsetPixels,
-    @required this.bottomBarOffsetPixels,
-  })  : assert(details != null),
-        assert(startPosition != null),
-        assert(translationPosition != null),
-        assert(scale != null),
-        assert(opacity != null),
-        assert(dragDistance != null),
-        assert(navigationBarOffsetPixels != null),
-        assert(bottomBarOffsetPixels != null);
+    required this.details,
+    required this.startPosition,
+    required this.translationPosition,
+    required this.scale,
+    required this.opacity,
+    required this.dragDistance,
+    required this.navigationBarOffsetPixels,
+    required this.bottomBarOffsetPixels,
+  });
 
   /// 拖拽的详细信息
   final DragUpdateDetails details;
@@ -130,8 +123,8 @@ class DragUpdateNotification extends DragNotification {
 class DragEndNotification extends DragNotification {
   /// 拖拽结束通知
   DragEndNotification({
-    @required this.details,
-  }) : assert(details != null);
+    required this.details,
+  });
 
   /// 拖拽的详细信息
   final DragEndDetails details;
@@ -153,7 +146,7 @@ class DragEndNotification extends DragNotification {
 }
 
 /// 构建navigationBar
-typedef NavigationBarBuilder = Widget Function(
+typedef NavigationBarBuilder = Widget? Function(
   BuildContext context,
   int index,
   int count,
@@ -168,35 +161,35 @@ typedef ImageProviderBuilder = ImageProvider Function(
 /// 拖拽结束回调
 typedef DragEndCallback = bool Function(
   double dragDistance,
-  double velocity,
+  double? velocity,
 );
 
 /// 图片
 class ImageOptions {
   /// 图片
   const ImageOptions({
-    @required this.url,
+    required this.url,
     this.thumbnailSize,
     this.tag,
   });
 
   /// 图片地址，可以是远程路径和本地路径
-  final String url;
+  final String? url;
 
   /// 缩略图大小
-  final Size thumbnailSize;
+  final Size? thumbnailSize;
 
   /// hero的tag
-  final String tag;
+  final String? tag;
 
   /// 是否为空
-  bool get isEmpty => url == null || url.isEmpty;
+  bool get isEmpty => url == null || url!.isEmpty;
 
   /// 是否不为空
-  bool get isNotEmpty => url != null && url.isNotEmpty;
+  bool get isNotEmpty => url != null && url!.isNotEmpty;
 
   /// 复制一个
-  ImageOptions copyWith({String url, String tag, Size thumbnailSize}) {
+  ImageOptions copyWith({String? url, String? tag, Size? thumbnailSize}) {
     return ImageOptions(
       url: url ?? this.url,
       tag: tag ?? this.tag,
@@ -234,31 +227,29 @@ class _HeroTag {
 class PreimageHero extends StatelessWidget {
   /// hero
   const PreimageHero({
-    Key key,
-    @required this.tag,
-    @required this.child,
+    Key? key,
+    required this.tag,
+    required this.child,
     this.createRectTween,
     this.flightShuttleBuilder,
     this.placeholderBuilder = _buildPlaceholder,
     this.transitionOnUserGestures = false,
-  })  : assert(child != null),
-        assert(transitionOnUserGestures != null),
-        super(key: key);
+  }) : super(key: key);
 
   /// Hero.tag
-  final String tag;
+  final String? tag;
 
   /// child
   final Widget child;
 
   /// Hero.createRectTween
-  final CreateRectTween createRectTween;
+  final CreateRectTween? createRectTween;
 
   /// Hero.flightShuttleBuilder
-  final HeroFlightShuttleBuilder flightShuttleBuilder;
+  final HeroFlightShuttleBuilder? flightShuttleBuilder;
 
   /// Hero.placeholderBuilder
-  final HeroPlaceholderBuilder placeholderBuilder;
+  final HeroPlaceholderBuilder? placeholderBuilder;
 
   /// Hero.placeholderBuilder
   final bool transitionOnUserGestures;
@@ -269,11 +260,11 @@ class PreimageHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (tag == null || tag.isEmpty) {
+    if (tag == null || tag!.isEmpty) {
       return child;
     }
     return Hero(
-      tag: _buildHeroTag(tag),
+      tag: _buildHeroTag(tag)!,
       createRectTween: createRectTween,
       flightShuttleBuilder: flightShuttleBuilder,
       placeholderBuilder: placeholderBuilder,
@@ -282,7 +273,7 @@ class PreimageHero extends StatelessWidget {
     );
   }
 
-  static Object _buildHeroTag(String tag) {
+  static Object? _buildHeroTag(String? tag) {
     if (tag == null || tag.isEmpty) {
       return null;
     }
@@ -294,10 +285,10 @@ class PreimageHero extends StatelessWidget {
 class PreimageView extends StatefulWidget {
   /// 图片预览
   const PreimageView({
-    Key key,
+    Key? key,
     this.initialIndex = 0,
-    @required this.images,
-    @required this.imageProviderBuilder,
+    required this.images,
+    required this.imageProviderBuilder,
     this.onPageChanged,
     this.navigationBarBuilder,
     this.bottomBarBuilder,
@@ -308,39 +299,37 @@ class PreimageView extends StatefulWidget {
     this.dragReferenceDistance = _kMaxDragDistance,
     this.duration = _kDuration,
     this.onDragEndCallback,
-  })  : assert(images != null && images.length > 0),
-        assert(initialIndex != null && initialIndex >= 0 && initialIndex < images.length),
-        assert(imageProviderBuilder != null),
-        assert(dragReferenceDistance != null && dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
-        assert(duration != null),
+  })  : assert(images.length > 0),
+        assert(initialIndex >= 0 && initialIndex < images.length),
+        assert(dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
         super(key: key);
 
   /// 初始index
   final int initialIndex;
 
   /// 图片组
-  final List<ImageOptions> images;
+  final List<ImageOptions?> images;
 
   /// 图片左右切换时回调
-  final ValueChanged<int> onPageChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// 构建navigationBar
-  final NavigationBarBuilder navigationBarBuilder;
+  final NavigationBarBuilder? navigationBarBuilder;
 
   /// 构建bottomBar
-  final IndexedWidgetBuilder bottomBarBuilder;
+  final IndexedWidgetBuilder? bottomBarBuilder;
 
   /// 点击
-  final ValueChanged<ImageOptions> onPressed;
+  final ValueChanged<ImageOptions>? onPressed;
 
   /// 长按
-  final ValueChanged<ImageOptions> onLongPressed;
+  final ValueChanged<ImageOptions>? onLongPressed;
 
   /// 缩放回调
-  final ValueChanged<PhotoViewScaleState> onScaleStateChanged;
+  final ValueChanged<PhotoViewScaleState>? onScaleStateChanged;
 
   /// 构建loading
-  final LoadingBuilder loadingBuilder;
+  final LoadingBuilder? loadingBuilder;
 
   /// 构建ImageProvider
   final ImageProviderBuilder imageProviderBuilder;
@@ -352,7 +341,7 @@ class PreimageView extends StatefulWidget {
   final Duration duration;
 
   /// 拖拽结束回调
-  final DragEndCallback onDragEndCallback;
+  final DragEndCallback? onDragEndCallback;
 
   @override
   _PreimageViewState createState() => _PreimageViewState();
@@ -362,15 +351,15 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
   final _navigationBarKey = GlobalKey();
   final _bottomBarKey = GlobalKey();
 
-  int _currentIndex = 0;
-  PageController _pageController;
-  Offset _startPosition;
-  Offset _translationPosition;
-  double _scaleOffset;
-  double _opacity;
-  double _dragDistance;
-  double _navigationBarOffsetPixels;
-  double _bottomBarOffsetPixels;
+  late int _currentIndex = 0;
+  late PageController _pageController;
+  late Offset _startPosition;
+  late Offset _translationPosition;
+  late double _scaleOffset;
+  late double _opacity;
+  late double _dragDistance;
+  late double _navigationBarOffsetPixels;
+  late double _bottomBarOffsetPixels;
 
   @override
   void initState() {
@@ -399,26 +388,26 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     _currentIndex = index;
     setState(() {});
     if (widget.onPageChanged != null) {
-      widget.onPageChanged(_currentIndex);
+      widget.onPageChanged!(_currentIndex);
     }
   }
 
   void _onTap() {
     final imageOptions = widget.images[_currentIndex];
     if (imageOptions != null && widget.onPressed != null) {
-      widget.onPressed(imageOptions);
+      widget.onPressed!(imageOptions);
     }
   }
 
   void _onLongPress() {
     final imageOptions = widget.images[_currentIndex];
     if (imageOptions != null && widget.onLongPressed != null) {
-      widget.onLongPressed(imageOptions);
+      widget.onLongPressed!(imageOptions);
     }
   }
 
   double _computeBarHeight(GlobalKey key) {
-    return key?.currentContext?.size?.height ?? 0.0;
+    return key.currentContext?.size?.height ?? 0.0;
   }
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
@@ -447,7 +436,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
       setState(() {});
     }
     if (widget.onScaleStateChanged != null) {
-      widget.onScaleStateChanged(scaleState);
+      widget.onScaleStateChanged!(scaleState);
     }
   }
 
@@ -503,7 +492,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
 
   PhotoViewGalleryPageOptions _buildPageOptions(BuildContext context, int index) {
     final image = widget.images[index];
-    final heroTag = PreimageHero._buildHeroTag(image.tag);
+    final heroTag = PreimageHero._buildHeroTag(image?.tag);
     return PhotoViewGalleryPageOptions(
       imageProvider: widget.imageProviderBuilder(context, index),
       initialScale: PhotoViewComputedScale.contained,
@@ -514,21 +503,21 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildNavigationBar() {
+  Widget? _buildNavigationBar() {
     if (widget.navigationBarBuilder == null) {
       return null;
     }
-    return widget.navigationBarBuilder(
+    return widget.navigationBarBuilder!(
       context,
       _currentIndex,
       widget.images.length,
     );
   }
 
-  Widget _buildBottomBar() {
-    Widget bottomBar;
+  Widget? _buildBottomBar() {
+    Widget? bottomBar;
     if (widget.bottomBarBuilder != null) {
-      bottomBar = widget.bottomBarBuilder(
+      bottomBar = widget.bottomBarBuilder!(
         context,
         _currentIndex,
       );

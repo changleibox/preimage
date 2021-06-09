@@ -31,19 +31,18 @@ class Preimage {
   const Preimage._();
 
   /// 预览一组图片
-  static Future<T> preview<T>(
+  static Future<T?> preview<T>(
     BuildContext context, {
     int initialIndex = 0,
-    @required List<ImageOptions> images,
-    ValueChanged<int> onIndexChanged,
-    PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
-    IndexedWidgetBuilder bottomBarBuilder,
-    ValueChanged<ImageOptions> onLongPressed,
-    ValueChanged<Edge> onOverEdge,
+    required List<ImageOptions?>? images,
+    ValueChanged<int>? onIndexChanged,
+    PreimageNavigationBarBuilder? navigationBarBuilder = _buildNavigationBar,
+    IndexedWidgetBuilder? bottomBarBuilder,
+    ValueChanged<ImageOptions>? onLongPressed,
+    ValueChanged<Edge>? onOverEdge,
     bool rootNavigator = false,
   }) {
-    assert(rootNavigator != null);
-    final _images = images?.where((image) => image != null && image.isNotEmpty)?.toList();
+    final _images = images?.where((image) => image != null && image.isNotEmpty).toList();
     if (_images == null || _images.isEmpty) {
       return Future.value();
     }
@@ -51,7 +50,7 @@ class Preimage {
       context,
       PreimagePage(
         initialIndex: initialIndex,
-        images: _images,
+        images: _images.map((e) => e!).toList(),
         onIndexChanged: onIndexChanged,
         navigationBarBuilder: navigationBarBuilder,
         bottomBarBuilder: bottomBarBuilder,
@@ -63,15 +62,14 @@ class Preimage {
   }
 
   /// 预览单张图片
-  static Future<T> previewSingle<T>(
+  static Future<T?> previewSingle<T>(
     BuildContext context,
-    ImageOptions image, {
+    ImageOptions? image, {
     PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
-    WidgetBuilder bottomBarBuilder,
-    ValueChanged<ImageOptions> onLongPressed,
+    WidgetBuilder? bottomBarBuilder,
+    ValueChanged<ImageOptions>? onLongPressed,
     bool rootNavigator = false,
   }) {
-    assert(rootNavigator != null);
     if (image == null || image.isEmpty) {
       return Future.value();
     }
@@ -87,8 +85,7 @@ class Preimage {
     );
   }
 
-  static Future<T> _push<T>(BuildContext context, Widget widget, {bool rootNavigator = false}) {
-    assert(rootNavigator != null);
+  static Future<T?> _push<T>(BuildContext context, Widget widget, {bool rootNavigator = false}) {
     return Navigator.of(context, rootNavigator: rootNavigator).push(
       PreimageRoute(
         opaque: false,
@@ -116,24 +113,24 @@ class Preimage {
 class PreimagePage extends StatefulWidget {
   /// 构造函数
   const PreimagePage({
-    Key key,
+    Key? key,
     this.initialIndex = 0,
-    @required this.images,
+    required this.images,
     this.onIndexChanged,
     this.navigationBarBuilder,
     this.bottomBarBuilder,
     this.onLongPressed,
     this.onOverEdge,
-  })  : assert(images != null && images.length > 0),
-        assert(initialIndex != null && initialIndex >= 0 && initialIndex < images.length),
+  })  : assert(images.length > 0),
+        assert(initialIndex >= 0 && initialIndex < images.length),
         super(key: key);
 
   /// 预览单张图片
   factory PreimagePage.single(
     ImageOptions image, {
-    WidgetBuilder bottomBarBuilder,
-    PreimageNavigationBarBuilder navigationBarBuilder,
-    ValueChanged<ImageOptions> onLongPressed,
+    WidgetBuilder? bottomBarBuilder,
+    PreimageNavigationBarBuilder? navigationBarBuilder,
+    ValueChanged<ImageOptions>? onLongPressed,
   }) {
     return PreimagePage(
       images: [image],
@@ -150,19 +147,19 @@ class PreimagePage extends StatefulWidget {
   final List<ImageOptions> images;
 
   /// 索引变化的时候
-  final ValueChanged<int> onIndexChanged;
+  final ValueChanged<int>? onIndexChanged;
 
   /// 构建预览页面的navigationBar
-  final PreimageNavigationBarBuilder navigationBarBuilder;
+  final PreimageNavigationBarBuilder? navigationBarBuilder;
 
   /// 构建预览页面的bottomBar
-  final IndexedWidgetBuilder bottomBarBuilder;
+  final IndexedWidgetBuilder? bottomBarBuilder;
 
   /// 长按回调
-  final ValueChanged<ImageOptions> onLongPressed;
+  final ValueChanged<ImageOptions>? onLongPressed;
 
   /// 超过边界回调
-  final ValueChanged<Edge> onOverEdge;
+  final ValueChanged<Edge>? onOverEdge;
 
   @override
   _PreimagePageState createState() => _PreimagePageState();
@@ -185,7 +182,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   void _onBackPressed() {
     if (widget.onIndexChanged != null) {
-      widget.onIndexChanged(_currentIndex);
+      widget.onIndexChanged!(_currentIndex);
     }
     Navigator.maybePop(context, _currentIndex);
   }
@@ -196,11 +193,12 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   void _onLongPressed(ImageOptions options) {
     if (widget.onLongPressed != null) {
-      widget.onLongPressed(options);
+      widget.onLongPressed!(options);
     }
   }
 
-  bool _onDragEndCallback(double dragDistance, double velocity) {
+  bool _onDragEndCallback(double dragDistance, double? velocity) {
+    velocity ??= 0;
     if (dragDistance > _kMaxDragDistance / 2 || velocity >= _kMaxDragVelocity) {
       _onBackPressed();
       return true;
@@ -249,17 +247,18 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   ImageProvider _buildImageProvider(BuildContext context, int index) {
     final url = widget.images[index].url;
-    if (url.startsWith('http')) {
+    if (url!.startsWith('http')) {
       return CachedNetworkImageProvider(url);
     } else {
       return FileImage(File(url));
     }
   }
 
-  Widget _buildLoading(BuildContext context, ImageChunkEvent event) {
-    double offset;
+  Widget _buildLoading(BuildContext context, ImageChunkEvent? event) {
+    double? offset;
     if (event != null) {
-      offset = event.cumulativeBytesLoaded.toDouble() / event.expectedTotalBytes.toDouble();
+      final totalBytes = event.expectedTotalBytes ?? 1;
+      offset = event.cumulativeBytesLoaded.toDouble() / totalBytes.toDouble();
     }
     return Center(
       child: SupportCupertinoActivityIndicator(
@@ -270,11 +269,11 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildNavigationBar(BuildContext context, int index, int count) {
+  Widget? _buildNavigationBar(BuildContext context, int index, int count) {
     if (widget.navigationBarBuilder == null) {
       return null;
     }
-    return widget.navigationBarBuilder(
+    return widget.navigationBarBuilder!(
       context,
       index,
       count,
@@ -332,16 +331,16 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
 class _DefaultNavigationBar extends StatelessWidget {
   const _DefaultNavigationBar({
-    Key key,
-    @required this.currentIndex,
-    @required this.count,
-    @required this.onBackPressed,
-  })  : assert(currentIndex != null && count != null && currentIndex < count),
+    Key? key,
+    required this.currentIndex,
+    required this.count,
+    required this.onBackPressed,
+  })  : assert(currentIndex < count),
         super(key: key);
 
   final int currentIndex;
   final int count;
-  final VoidCallback onBackPressed;
+  final VoidCallback? onBackPressed;
 
   @override
   Widget build(BuildContext context) {
