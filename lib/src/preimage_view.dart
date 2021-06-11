@@ -146,7 +146,7 @@ class DragEndNotification extends DragNotification {
 }
 
 /// 构建navigationBar
-typedef NavigationBarBuilder = Widget? Function(
+typedef PreimageNavigationBuilder = Widget? Function(
   BuildContext context,
   int index,
   int count,
@@ -314,10 +314,10 @@ class PreimageView extends StatefulWidget {
   final ValueChanged<int>? onPageChanged;
 
   /// 构建navigationBar
-  final NavigationBarBuilder? navigationBarBuilder;
+  final PreimageNavigationBuilder? navigationBarBuilder;
 
   /// 构建bottomBar
-  final IndexedWidgetBuilder? bottomBarBuilder;
+  final PreimageNavigationBuilder? bottomBarBuilder;
 
   /// 点击
   final ValueChanged<ImageOptions>? onPressed;
@@ -520,6 +520,7 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
       bottomBar = widget.bottomBarBuilder!(
         context,
         _currentIndex,
+        widget.images.length,
       );
     }
     if (bottomBar != null) {

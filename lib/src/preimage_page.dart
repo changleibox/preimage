@@ -37,7 +37,7 @@ class Preimage {
     required List<ImageOptions?>? images,
     ValueChanged<int>? onIndexChanged,
     PreimageNavigationBarBuilder? navigationBarBuilder = _buildNavigationBar,
-    IndexedWidgetBuilder? bottomBarBuilder,
+    PreimageNavigationBuilder? bottomBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
     ValueChanged<Edge>? onOverEdge,
     bool rootNavigator = false,
@@ -136,7 +136,7 @@ class PreimagePage extends StatefulWidget {
       images: [image],
       onLongPressed: onLongPressed,
       navigationBarBuilder: navigationBarBuilder,
-      bottomBarBuilder: bottomBarBuilder == null ? null : (context, index) => bottomBarBuilder(context),
+      bottomBarBuilder: bottomBarBuilder == null ? null : (context, index, count) => bottomBarBuilder(context),
     );
   }
 
@@ -153,7 +153,7 @@ class PreimagePage extends StatefulWidget {
   final PreimageNavigationBarBuilder? navigationBarBuilder;
 
   /// 构建预览页面的bottomBar
-  final IndexedWidgetBuilder? bottomBarBuilder;
+  final PreimageNavigationBuilder? bottomBarBuilder;
 
   /// 长按回调
   final ValueChanged<ImageOptions>? onLongPressed;
