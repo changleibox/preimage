@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:preimage/src/preimage_route.dart';
 import 'package:preimage/src/preimage_view.dart';
 import 'package:preimage/src/primitive_navigation_bar.dart';
-import 'package:preimage/src/support_activity_indicator.dart';
 
 const double _kMaxDragVelocity = 100;
 const double _kMaxDragDistance = 200;
@@ -260,12 +259,17 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
       final totalBytes = event.expectedTotalBytes ?? 1;
       offset = event.cumulativeBytesLoaded.toDouble() / totalBytes.toDouble();
     }
-    return Center(
-      child: SupportCupertinoActivityIndicator(
+    Widget child = const CupertinoActivityIndicator(
+      radius: 14,
+    );
+    if (offset != null) {
+      child = CupertinoActivityIndicator.partiallyRevealed(
         radius: 14,
-        animating: offset == null,
-        position: offset,
-      ),
+        progress: offset,
+      );
+    }
+    return Center(
+      child: child,
     );
   }
 
