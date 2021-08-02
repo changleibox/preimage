@@ -28,6 +28,15 @@ typedef PreimageNavigationBarBuilder = Widget Function(
   VoidCallback onBackPressed,
 );
 
+/// 边界类型
+enum Edge {
+  /// 起始
+  start,
+
+  /// 结束
+  end,
+}
+
 /// 图片预览
 class Preimage {
   const Preimage._();
@@ -108,6 +117,130 @@ class Preimage {
       count: count,
       onBackPressed: onBackPressed,
     );
+  }
+}
+
+/// 图片
+class ImageOptions {
+  /// 图片
+  const ImageOptions({
+    required this.url,
+    this.thumbnailSize,
+    this.builder,
+    String? tag,
+  }) : _tag = tag;
+
+  /// 图片地址，可以是远程路径和本地路径
+  final String? url;
+
+  /// 缩略图大小
+  final Size? thumbnailSize;
+
+  /// 构建item
+  final WidgetBuilder? builder;
+
+  /// hero的tag
+  final String? _tag;
+
+  /// 是否为空
+  bool get isEmpty => url == null || url!.isEmpty;
+
+  /// 是否不为空
+  bool get isNotEmpty => url != null && url!.isNotEmpty;
+
+  /// 复制一个
+  ImageOptions copyWith({String? url, String? tag, Size? thumbnailSize}) {
+    return ImageOptions(
+      url: url ?? this.url,
+      tag: tag ?? _tag,
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
+    );
+  }
+
+  /// HeroTag
+  Object? get tag => PreimageHero._buildHeroTag(_tag);
+}
+
+class _HeroTag {
+  const _HeroTag(this.url);
+
+  final String url;
+
+  @override
+  String toString() => url;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is _HeroTag && other.url == url;
+  }
+
+  @override
+  int get hashCode {
+    return identityHashCode(url);
+  }
+}
+
+/// hero
+class PreimageHero extends StatelessWidget {
+  /// hero
+  const PreimageHero({
+    Key? key,
+    required this.tag,
+    required this.child,
+    this.createRectTween,
+    this.flightShuttleBuilder,
+    this.placeholderBuilder = _buildPlaceholder,
+    this.transitionOnUserGestures = false,
+  }) : super(key: key);
+
+  /// Hero.tag
+  final String? tag;
+
+  /// child
+  final Widget child;
+
+  /// Hero.createRectTween
+  final CreateRectTween? createRectTween;
+
+  /// Hero.flightShuttleBuilder
+  final HeroFlightShuttleBuilder? flightShuttleBuilder;
+
+  /// Hero.placeholderBuilder
+  final HeroPlaceholderBuilder? placeholderBuilder;
+
+  /// Hero.placeholderBuilder
+  final bool transitionOnUserGestures;
+
+  static Widget _buildPlaceholder(BuildContext context, Size heroSize, Widget child) {
+    return child;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (tag == null || tag!.isEmpty) {
+      return child;
+    }
+    return Hero(
+      tag: _buildHeroTag(tag)!,
+      createRectTween: createRectTween,
+      flightShuttleBuilder: flightShuttleBuilder,
+      placeholderBuilder: placeholderBuilder,
+      transitionOnUserGestures: transitionOnUserGestures,
+      child: child,
+    );
+  }
+
+  static Object? _buildHeroTag(String? tag) {
+    if (tag == null || tag.isEmpty) {
+      return null;
+    }
+    return _HeroTag('preimage:$tag');
   }
 }
 
@@ -297,14 +430,27 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
         tag: heroTag,
       );
     }
-    return PhotoViewGalleryPageOptions(
-      imageProvider: _buildImageProvider(context, index),
-      initialScale: PhotoViewComputedScale.contained,
-      basePosition: Alignment.center,
-      tightMode: true,
-      gestureDetectorBehavior: HitTestBehavior.translucent,
-      heroAttributes: attributes,
-    );
+    final builder = imageOptions.builder;
+    if (builder != null) {
+      return PhotoViewGalleryPageOptions.customChild(
+        child: builder(context),
+        initialScale: PhotoViewComputedScale.contained,
+        basePosition: Alignment.center,
+        tightMode: false,
+        disableGestures: true,
+        gestureDetectorBehavior: HitTestBehavior.translucent,
+        heroAttributes: attributes,
+      );
+    } else {
+      return PhotoViewGalleryPageOptions(
+        imageProvider: _buildImageProvider(context, index),
+        initialScale: PhotoViewComputedScale.contained,
+        basePosition: Alignment.center,
+        tightMode: true,
+        gestureDetectorBehavior: HitTestBehavior.translucent,
+        heroAttributes: attributes,
+      );
+    }
   }
 
   @override
@@ -384,134 +530,5 @@ class _DefaultNavigationBar extends StatelessWidget {
         child: const Text('关闭'),
       ),
     );
-  }
-}
-
-/// 边界类型
-enum Edge {
-  /// 起始
-  start,
-
-  /// 结束
-  end,
-}
-
-/// 图片
-class ImageOptions {
-  /// 图片
-  const ImageOptions({
-    required this.url,
-    this.thumbnailSize,
-    String? tag,
-  }) : _tag = tag;
-
-  /// 图片地址，可以是远程路径和本地路径
-  final String? url;
-
-  /// 缩略图大小
-  final Size? thumbnailSize;
-
-  /// hero的tag
-  final String? _tag;
-
-  /// 是否为空
-  bool get isEmpty => url == null || url!.isEmpty;
-
-  /// 是否不为空
-  bool get isNotEmpty => url != null && url!.isNotEmpty;
-
-  /// 复制一个
-  ImageOptions copyWith({String? url, String? tag, Size? thumbnailSize}) {
-    return ImageOptions(
-      url: url ?? this.url,
-      tag: tag ?? _tag,
-      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
-    );
-  }
-
-  /// HeroTag
-  Object? get tag => PreimageHero._buildHeroTag(_tag);
-}
-
-class _HeroTag {
-  const _HeroTag(this.url);
-
-  final String url;
-
-  @override
-  String toString() => url;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    return other is _HeroTag && other.url == url;
-  }
-
-  @override
-  int get hashCode {
-    return identityHashCode(url);
-  }
-}
-
-/// hero
-class PreimageHero extends StatelessWidget {
-  /// hero
-  const PreimageHero({
-    Key? key,
-    required this.tag,
-    required this.child,
-    this.createRectTween,
-    this.flightShuttleBuilder,
-    this.placeholderBuilder = _buildPlaceholder,
-    this.transitionOnUserGestures = false,
-  }) : super(key: key);
-
-  /// Hero.tag
-  final String? tag;
-
-  /// child
-  final Widget child;
-
-  /// Hero.createRectTween
-  final CreateRectTween? createRectTween;
-
-  /// Hero.flightShuttleBuilder
-  final HeroFlightShuttleBuilder? flightShuttleBuilder;
-
-  /// Hero.placeholderBuilder
-  final HeroPlaceholderBuilder? placeholderBuilder;
-
-  /// Hero.placeholderBuilder
-  final bool transitionOnUserGestures;
-
-  static Widget _buildPlaceholder(BuildContext context, Size heroSize, Widget child) {
-    return child;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (tag == null || tag!.isEmpty) {
-      return child;
-    }
-    return Hero(
-      tag: _buildHeroTag(tag)!,
-      createRectTween: createRectTween,
-      flightShuttleBuilder: flightShuttleBuilder,
-      placeholderBuilder: placeholderBuilder,
-      transitionOnUserGestures: transitionOnUserGestures,
-      child: child,
-    );
-  }
-
-  static Object? _buildHeroTag(String? tag) {
-    if (tag == null || tag.isEmpty) {
-      return null;
-    }
-    return _HeroTag('preimage:$tag');
   }
 }
