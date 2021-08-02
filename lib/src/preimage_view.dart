@@ -170,8 +170,8 @@ class ImageOptions {
   const ImageOptions({
     required this.url,
     this.thumbnailSize,
-    this.tag,
-  });
+    String? tag,
+  }) : _tag = tag;
 
   /// 图片地址，可以是远程路径和本地路径
   final String? url;
@@ -180,7 +180,7 @@ class ImageOptions {
   final Size? thumbnailSize;
 
   /// hero的tag
-  final String? tag;
+  final String? _tag;
 
   /// 是否为空
   bool get isEmpty => url == null || url!.isEmpty;
@@ -192,10 +192,13 @@ class ImageOptions {
   ImageOptions copyWith({String? url, String? tag, Size? thumbnailSize}) {
     return ImageOptions(
       url: url ?? this.url,
-      tag: tag ?? this.tag,
+      tag: tag ?? _tag,
       thumbnailSize: thumbnailSize ?? this.thumbnailSize,
     );
   }
+
+  /// HeroTag
+  Object? get tag => PreimageHero._buildHeroTag(_tag);
 }
 
 class _HeroTag {
@@ -299,9 +302,60 @@ class PreimageView extends StatefulWidget {
     this.dragReferenceDistance = _kMaxDragDistance,
     this.duration = _kDuration,
     this.onDragEndCallback,
-  })  : assert(images.length > 0),
+  })  : assert(imageProviderBuilder != null),
+        assert(images.length > 0),
         assert(initialIndex >= 0 && initialIndex < images.length),
         assert(dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
+        childBuilder = null,
+        builder = null,
+        super(key: key);
+
+  /// 图片预览
+  const PreimageView.custom({
+    Key? key,
+    this.initialIndex = 0,
+    required this.images,
+    required this.childBuilder,
+    this.onPageChanged,
+    this.navigationBarBuilder,
+    this.bottomBarBuilder,
+    this.onPressed,
+    this.onLongPressed,
+    this.onScaleStateChanged,
+    this.loadingBuilder,
+    this.dragReferenceDistance = _kMaxDragDistance,
+    this.duration = _kDuration,
+    this.onDragEndCallback,
+  })  : assert(childBuilder != null),
+        assert(images.length > 0),
+        assert(initialIndex >= 0 && initialIndex < images.length),
+        assert(dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
+        imageProviderBuilder = null,
+        builder = null,
+        super(key: key);
+
+  /// 图片预览
+  const PreimageView.builder({
+    Key? key,
+    this.initialIndex = 0,
+    required this.images,
+    required this.builder,
+    this.onPageChanged,
+    this.navigationBarBuilder,
+    this.bottomBarBuilder,
+    this.onPressed,
+    this.onLongPressed,
+    this.onScaleStateChanged,
+    this.loadingBuilder,
+    this.dragReferenceDistance = _kMaxDragDistance,
+    this.duration = _kDuration,
+    this.onDragEndCallback,
+  })  : assert(builder != null),
+        assert(images.length > 0),
+        assert(initialIndex >= 0 && initialIndex < images.length),
+        assert(dragReferenceDistance >= 0 && dragReferenceDistance != double.infinity),
+        imageProviderBuilder = null,
+        childBuilder = null,
         super(key: key);
 
   /// 初始index
@@ -332,7 +386,13 @@ class PreimageView extends StatefulWidget {
   final LoadingBuilder? loadingBuilder;
 
   /// 构建ImageProvider
-  final ImageProviderBuilder imageProviderBuilder;
+  final ImageProviderBuilder? imageProviderBuilder;
+
+  /// 构建自定义child
+  final IndexedWidgetBuilder? childBuilder;
+
+  /// Called to build items for the gallery when using [PhotoViewGallery.builder]
+  final PhotoViewGalleryBuilder? builder;
 
   /// 组大拖拽距离
   final double dragReferenceDistance;
@@ -491,16 +551,35 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
   }
 
   PhotoViewGalleryPageOptions _buildPageOptions(BuildContext context, int index) {
-    final image = widget.images[index];
-    final heroTag = PreimageHero._buildHeroTag(image?.tag);
-    return PhotoViewGalleryPageOptions(
-      imageProvider: widget.imageProviderBuilder(context, index),
-      initialScale: PhotoViewComputedScale.contained,
-      basePosition: Alignment.center,
-      tightMode: true,
-      gestureDetectorBehavior: HitTestBehavior.translucent,
-      heroAttributes: heroTag == null ? null : PhotoViewHeroAttributes(tag: heroTag),
-    );
+    if (widget.builder != null) {
+      return widget.builder!(context, index);
+    }
+    final heroTag = widget.images[index]?.tag;
+    PhotoViewHeroAttributes? attributes;
+    if (heroTag != null) {
+      attributes = PhotoViewHeroAttributes(
+        tag: heroTag,
+      );
+    }
+    if (widget.childBuilder == null) {
+      return PhotoViewGalleryPageOptions(
+        imageProvider: widget.imageProviderBuilder!(context, index),
+        initialScale: PhotoViewComputedScale.contained,
+        basePosition: Alignment.center,
+        tightMode: true,
+        gestureDetectorBehavior: HitTestBehavior.translucent,
+        heroAttributes: attributes,
+      );
+    } else {
+      return PhotoViewGalleryPageOptions.customChild(
+        child: widget.childBuilder!(context, index),
+        initialScale: PhotoViewComputedScale.contained,
+        basePosition: Alignment.center,
+        tightMode: true,
+        gestureDetectorBehavior: HitTestBehavior.translucent,
+        heroAttributes: attributes,
+      );
+    }
   }
 
   Widget? _buildNavigationBar() {
