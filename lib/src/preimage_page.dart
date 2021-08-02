@@ -8,7 +8,10 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:preimage/src/preimage_route.dart';
 import 'package:preimage/src/preimage_view.dart';
 import 'package:preimage/src/primitive_navigation_bar.dart';
@@ -186,13 +189,13 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     Navigator.maybePop(context, _currentIndex);
   }
 
-  void _onPressed(ImageOptions options) {
+  void _onPressed(int index) {
     _onBackPressed();
   }
 
-  void _onLongPressed(ImageOptions options) {
+  void _onLongPressed(int index) {
     if (widget.onLongPressed != null) {
-      widget.onLongPressed!(options);
+      widget.onLongPressed!(widget.images[index]);
     }
   }
 
@@ -244,15 +247,6 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     return false;
   }
 
-  ImageProvider _buildImageProvider(BuildContext context, int index) {
-    final url = widget.images[index].url;
-    if (url!.startsWith('http')) {
-      return CachedNetworkImageProvider(url);
-    } else {
-      return FileImage(File(url));
-    }
-  }
-
   Widget _buildLoading(BuildContext context, ImageChunkEvent? event) {
     double? offset;
     if (event != null) {
@@ -285,6 +279,34 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     );
   }
 
+  ImageProvider _buildImageProvider(BuildContext context, int index) {
+    final url = widget.images[index].url;
+    if (url!.startsWith('http')) {
+      return CachedNetworkImageProvider(url);
+    } else {
+      return FileImage(File(url));
+    }
+  }
+
+  PhotoViewGalleryPageOptions _buildPageOptions(BuildContext context, int index) {
+    final imageOptions = widget.images[index];
+    final heroTag = imageOptions.tag;
+    PhotoViewHeroAttributes? attributes;
+    if (heroTag != null) {
+      attributes = PhotoViewHeroAttributes(
+        tag: heroTag,
+      );
+    }
+    return PhotoViewGalleryPageOptions(
+      imageProvider: _buildImageProvider(context, index),
+      initialScale: PhotoViewComputedScale.contained,
+      basePosition: Alignment.center,
+      tightMode: true,
+      gestureDetectorBehavior: HitTestBehavior.translucent,
+      heroAttributes: attributes,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final duration = _opacity == 1.0 ? _kDuration : Duration.zero;
@@ -309,10 +331,8 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                 onNotification: _onDragNotification,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: _onScrollNotification,
-                  child: PreimageView(
+                  child: PreimageView.builder(
                     initialIndex: widget.initialIndex,
-                    images: widget.images,
-                    imageProviderBuilder: _buildImageProvider,
                     navigationBarBuilder: _buildNavigationBar,
                     bottomBarBuilder: widget.bottomBarBuilder,
                     loadingBuilder: _buildLoading,
@@ -322,6 +342,8 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                     onLongPressed: _onLongPressed,
                     onPageChanged: _onPageChanged,
                     onDragEndCallback: _onDragEndCallback,
+                    itemCount: widget.images.length,
+                    builder: _buildPageOptions,
                   ),
                 ),
               ),
@@ -372,4 +394,124 @@ enum Edge {
 
   /// 结束
   end,
+}
+
+/// 图片
+class ImageOptions {
+  /// 图片
+  const ImageOptions({
+    required this.url,
+    this.thumbnailSize,
+    String? tag,
+  }) : _tag = tag;
+
+  /// 图片地址，可以是远程路径和本地路径
+  final String? url;
+
+  /// 缩略图大小
+  final Size? thumbnailSize;
+
+  /// hero的tag
+  final String? _tag;
+
+  /// 是否为空
+  bool get isEmpty => url == null || url!.isEmpty;
+
+  /// 是否不为空
+  bool get isNotEmpty => url != null && url!.isNotEmpty;
+
+  /// 复制一个
+  ImageOptions copyWith({String? url, String? tag, Size? thumbnailSize}) {
+    return ImageOptions(
+      url: url ?? this.url,
+      tag: tag ?? _tag,
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
+    );
+  }
+
+  /// HeroTag
+  Object? get tag => PreimageHero._buildHeroTag(_tag);
+}
+
+class _HeroTag {
+  const _HeroTag(this.url);
+
+  final String url;
+
+  @override
+  String toString() => url;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is _HeroTag && other.url == url;
+  }
+
+  @override
+  int get hashCode {
+    return identityHashCode(url);
+  }
+}
+
+/// hero
+class PreimageHero extends StatelessWidget {
+  /// hero
+  const PreimageHero({
+    Key? key,
+    required this.tag,
+    required this.child,
+    this.createRectTween,
+    this.flightShuttleBuilder,
+    this.placeholderBuilder = _buildPlaceholder,
+    this.transitionOnUserGestures = false,
+  }) : super(key: key);
+
+  /// Hero.tag
+  final String? tag;
+
+  /// child
+  final Widget child;
+
+  /// Hero.createRectTween
+  final CreateRectTween? createRectTween;
+
+  /// Hero.flightShuttleBuilder
+  final HeroFlightShuttleBuilder? flightShuttleBuilder;
+
+  /// Hero.placeholderBuilder
+  final HeroPlaceholderBuilder? placeholderBuilder;
+
+  /// Hero.placeholderBuilder
+  final bool transitionOnUserGestures;
+
+  static Widget _buildPlaceholder(BuildContext context, Size heroSize, Widget child) {
+    return child;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (tag == null || tag!.isEmpty) {
+      return child;
+    }
+    return Hero(
+      tag: _buildHeroTag(tag)!,
+      createRectTween: createRectTween,
+      flightShuttleBuilder: flightShuttleBuilder,
+      placeholderBuilder: placeholderBuilder,
+      transitionOnUserGestures: transitionOnUserGestures,
+      child: child,
+    );
+  }
+
+  static Object? _buildHeroTag(String? tag) {
+    if (tag == null || tag.isEmpty) {
+      return null;
+    }
+    return _HeroTag('preimage:$tag');
+  }
 }

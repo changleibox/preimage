@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:preimage/preimage.dart';
 
-const String _testAvatarUrl = 'https://p5.gexing.com/GSF/shaitu/20181118/1427/5bf1064593f44.jpg';
+const String _testAvatarUrl = 'http://img.netbian.com/file/2020/1126/d80fba29d14a4dc832b73db9686d1fdd.jpg';
 
 void main() {
   runApp(MyApp());
@@ -24,7 +24,16 @@ class _MyAppState extends State<MyApp> {
 }
 
 class _PluginExamplePage extends StatelessWidget {
-  Widget _buildBottomBar(BuildContext context, int index) {
+  final _images = List.generate(10, _builderImage);
+
+  static ImageOptions _builderImage(int index) {
+    return ImageOptions(
+      url: _testAvatarUrl,
+      tag: [_testAvatarUrl, index].join('_'),
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context, int index, int count) {
     if (index % 4 == 1) {
       return const SizedBox.shrink();
     }
@@ -66,12 +75,6 @@ class _PluginExamplePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final images = List.generate(10, (index) {
-      return ImageOptions(
-        url: _testAvatarUrl,
-        tag: [_testAvatarUrl, index].join('_'),
-      );
-    });
     return CupertinoPageScaffold(
       navigationBar: const CupertinoNavigationBar(
         middle: Text('Plugin example app'),
@@ -83,31 +86,34 @@ class _PluginExamplePage extends StatelessWidget {
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
-          itemCount: images.length,
+          itemCount: _images.length,
           itemBuilder: (context, index) {
-            final image = images[index];
-            return CupertinoButton(
-              borderRadius: BorderRadius.zero,
-              padding: EdgeInsets.zero,
-              minSize: 0,
-              onPressed: () {
-                Preimage.preview<void>(
-                  context,
-                  images: images,
-                  initialIndex: index,
-                  bottomBarBuilder: _buildBottomBar,
-                  onOverEdge: (value) {
-                    print(value);
-                  },
-                );
-              },
-              child: PreimageHero(
-                tag: image.tag,
-                child: CachedNetworkImage(
-                  imageUrl: image.url,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
+            final image = _images[index];
+            return KeyedSubtree(
+              key: ObjectKey(image.url),
+              child: CupertinoButton(
+                borderRadius: BorderRadius.zero,
+                padding: EdgeInsets.zero,
+                minSize: 0,
+                onPressed: () {
+                  Preimage.preview<void>(
+                    context,
+                    images: _images,
+                    initialIndex: index,
+                    bottomBarBuilder: _buildBottomBar,
+                    onOverEdge: (value) {
+                      print(value);
+                    },
+                  );
+                },
+                child: PreimageHero(
+                  tag: [image.url, index].join('_'),
+                  child: CachedNetworkImage(
+                    imageUrl: image.url ?? '',
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             );
