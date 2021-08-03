@@ -350,8 +350,10 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     final onDragEndCallback = widget.onDragEndCallback;
     if (onDragEndCallback == null || !onDragEndCallback(dragDistance, details.primaryVelocity)) {
       _reset();
-      DragEndNotification(details: details).dispatch(context);
+    } else {
+      _dismiss();
     }
+    DragEndNotification(details: details).dispatch(context);
   }
 
   void _reset() {
@@ -362,6 +364,17 @@ class _PreimageViewState extends State<PreimageView> with SingleTickerProviderSt
     _dragDistance = 0.0;
     _navigationBarOffsetPixels = 0.0;
     _bottomBarOffsetPixels = 0.0;
+    setState(() {});
+  }
+
+  void _dismiss() {
+    _startPosition = Offset.zero;
+    _translationPosition = Offset.zero;
+    _scaleOffset = 0.0;
+    _opacity = 1.0;
+    _dragDistance = 0.0;
+    _navigationBarOffsetPixels = -_computeBarHeight(_navigationBarKey);
+    _bottomBarOffsetPixels = -_computeBarHeight(_bottomBarKey);
     setState(() {});
   }
 
