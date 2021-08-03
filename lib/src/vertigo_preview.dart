@@ -347,8 +347,11 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     if (widget.navigationBarBuilder == null) {
       return null;
     }
-    return Builder(
-      builder: widget.navigationBarBuilder!,
+    return Container(
+      width: double.infinity,
+      child: Builder(
+        builder: widget.navigationBarBuilder!,
+      ),
     );
   }
 
@@ -356,8 +359,11 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     if (widget.bottomBarBuilder == null) {
       return null;
     }
-    return Builder(
-      builder: widget.bottomBarBuilder!,
+    return Container(
+      width: double.infinity,
+      child: Builder(
+        builder: widget.bottomBarBuilder!,
+      ),
     );
   }
 

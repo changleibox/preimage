@@ -200,41 +200,49 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (index % 4 == 1) {
-      return const SizedBox.shrink();
-    }
     final size = MediaQuery.of(context).size;
-    return Container(
-      height: index.isEven ? null : size.height / 2,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 10,
+    var state = CrossFadeState.showSecond;
+    if (index % 4 == 1) {
+      state = CrossFadeState.showFirst;
+    }
+    return AnimatedCrossFade(
+      crossFadeState: state,
+      duration: const Duration(
+        milliseconds: 300,
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '测试标题',
-              style: TextStyle(
-                color: CupertinoDynamicColor.resolve(
-                  CupertinoColors.label,
-                  context,
+      firstChild: Container(),
+      secondChild: Container(
+        height: index.isEven ? null : size.height / 3,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '测试标题',
+                style: TextStyle(
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.label,
+                    context,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              '测试内容',
-              style: TextStyle(
-                fontSize: 15,
-                color: CupertinoDynamicColor.resolve(
-                  CupertinoColors.secondaryLabel,
-                  context,
+              Text(
+                '测试内容',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: CupertinoDynamicColor.resolve(
+                    CupertinoColors.secondaryLabel,
+                    context,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
