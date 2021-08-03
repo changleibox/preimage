@@ -163,7 +163,7 @@ class VertigoPreviewController extends ChangeNotifier {
   void _checkStateNotNull() {
     assert(
       _state != null,
-      '未绑定到`VertigoPreview`，或已接触就绑定',
+      '未绑定到`VertigoPreview`，或已解除绑定',
     );
   }
 
