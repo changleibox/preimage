@@ -226,6 +226,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   late Offset _startPosition;
   late Offset _dragDistance;
 
+  Animation<double>? _routeAnimation;
+
   @override
   void initState() {
     widget.controller?._state = this;
@@ -243,9 +245,37 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   }
 
   @override
+  void didChangeDependencies() {
+    _routeAnimation?.removeStatusListener(_onRouteAnimationStatusChanged);
+    _routeAnimation = ModalRoute.of(context)?.animation;
+    _routeAnimation?.addStatusListener(_onRouteAnimationStatusChanged);
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
+    _routeAnimation?.removeStatusListener(_onRouteAnimationStatusChanged);
     super.dispose();
+  }
+
+  void _onRouteAnimationStatusChanged(AnimationStatus status) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  Animation<double> get _actualAnimation {
+    if (_animationController.isAnimating) {
+      return _animation;
+    }
+    final status = _routeAnimation?.status;
+    if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
+      return _routeAnimation!;
+    } else {
+      return _animation;
+    }
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
@@ -373,9 +403,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
           ),
           Positioned.fill(
             top: null,
-            child: SizeTransition(
-              sizeFactor: _animation,
-              axis: Axis.vertical,
+            child: _AnimatedOverlay(
+              listenable: _actualAnimation,
               axisAlignment: -1,
               child: DefaultTextStyle(
                 style: DefaultTextStyle.of(context).style.copyWith(
@@ -404,23 +433,15 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
                     minHeight: 0,
                     maxHeight: MediaQuery.of(context).size.height / 4,
                   ),
-                  child: AnimatedSize(
-                    duration: widget.duration,
-                    vsync: this,
-                    alignment: Alignment.topCenter,
-                    child: ClipRect(
-                      child: _buildBottomBar(),
-                    ),
-                  ),
+                  child: _buildBottomBar(),
                 ),
               ),
             ),
           ),
           Positioned.fill(
             bottom: null,
-            child: SizeTransition(
-              sizeFactor: _animation,
-              axis: Axis.vertical,
+            child: _AnimatedOverlay(
+              listenable: _actualAnimation,
               axisAlignment: 1,
               child: Container(
                 decoration: BoxDecoration(
@@ -438,6 +459,40 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedOverlay extends AnimatedWidget {
+  const _AnimatedOverlay({
+    Key? key,
+    required Listenable listenable,
+    required this.child,
+    this.axisAlignment = 0,
+  }) : super(
+          key: key,
+          listenable: listenable,
+        );
+
+  final Widget child;
+  final double axisAlignment;
+
+  /// The animation that controls the scale of the child.
+  ///
+  /// If the current value of the scale animation is v, the child will be
+  /// painted v times its normal size.
+  Animation<double> get animation => listenable as Animation<double>;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      axisAlignment: axisAlignment,
+      axis: Axis.vertical,
+      sizeFactor: animation,
+      child: FadeTransition(
+        opacity: animation,
+        child: child,
       ),
     );
   }
