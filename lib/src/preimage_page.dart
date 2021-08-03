@@ -17,9 +17,12 @@ import 'package:preimage/src/preimage_route.dart';
 import 'package:preimage/src/primitive_navigation_bar.dart';
 import 'package:preimage/src/vertigo_preview.dart';
 
-const double _dragVelocity = 100;
-const double _dragDamping = 200;
-const Duration _kDuration = Duration(milliseconds: 300);
+const _dragVelocity = 100.0;
+const _dragDamping = 200.0;
+const _kDuration = Duration(
+  milliseconds: 300,
+);
+const _transparent = Color(0x00000000);
 
 /// 构建navigationBar
 typedef PreimageTopBarBuilder = Widget Function(
@@ -471,19 +474,34 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     }
   }
 
+  SystemUiOverlayStyle get _overlayStyle {
+    final isDark = _offset > 0.5;
+    final newBrightness = isDark ? Brightness.dark : Brightness.light;
+    final SystemUiOverlayStyle overlayStyle;
+    switch (newBrightness) {
+      case Brightness.dark:
+        overlayStyle = SystemUiOverlayStyle.light;
+        break;
+      case Brightness.light:
+        overlayStyle = SystemUiOverlayStyle.dark;
+        break;
+    }
+    return overlayStyle;
+  }
+
   @override
   Widget build(BuildContext context) {
     final duration = _offset == 1.0 ? _kDuration : Duration.zero;
-    final queryData = MediaQuery.of(context);
     final hasTopBar = widget.topBarBuilder != null;
+    final queryData = MediaQuery.of(context);
     return CupertinoTheme(
       data: CupertinoTheme.of(context).copyWith(
         primaryColor: CupertinoColors.white,
+        scaffoldBackgroundColor: _transparent,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: CupertinoColors.black.withOpacity(0),
       ),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
+        value: _overlayStyle,
         child: CupertinoPageScaffold(
           child: MediaQuery(
             data: queryData.copyWith(
