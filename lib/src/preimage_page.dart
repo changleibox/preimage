@@ -345,7 +345,11 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
       _onBackPressed();
       return true;
     }
-    _offset = 1.0;
+    if (mounted) {
+      setState(() {
+        _offset = 1.0;
+      });
+    }
     return false;
   }
 
