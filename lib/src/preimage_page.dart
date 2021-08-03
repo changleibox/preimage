@@ -83,7 +83,7 @@ class Preimage {
       context,
       PreimagePage.single(
         image,
-        navigationBarBuilder: topBarBuilder,
+        topBarBuilder: topBarBuilder,
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
       ),
@@ -264,15 +264,21 @@ class PreimagePage extends StatefulWidget {
   /// 预览单张图片
   factory PreimagePage.single(
     ImageOptions image, {
+    PreimageTopBarBuilder? topBarBuilder,
     WidgetBuilder? bottomBarBuilder,
-    PreimageTopBarBuilder? navigationBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
   }) {
+    PreimageBarBuilder? convertedBottomBarBuilder;
+    if (bottomBarBuilder != null) {
+      convertedBottomBarBuilder = (context, index, count) {
+        return bottomBarBuilder(context);
+      };
+    }
     return PreimagePage(
       images: [image],
       onLongPressed: onLongPressed,
-      topBarBuilder: navigationBarBuilder,
-      bottomBarBuilder: bottomBarBuilder == null ? null : (context, index, count) => bottomBarBuilder(context),
+      topBarBuilder: topBarBuilder,
+      bottomBarBuilder: convertedBottomBarBuilder,
     );
   }
 
