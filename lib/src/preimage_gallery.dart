@@ -3,6 +3,7 @@
  */
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:preimage/src/vertigo_preview.dart';
@@ -51,6 +52,9 @@ class PreimageGallery extends StatefulWidget {
     this.duration = _kDuration,
     this.onDragStartCallback,
     this.onDragEndCallback,
+    this.enabled = true,
+    this.behavior,
+    this.dragStartBehavior = DragStartBehavior.start,
     this.onOverEdge,
   }) : super(key: key);
 
@@ -101,6 +105,36 @@ class PreimageGallery extends StatefulWidget {
 
   /// 拖拽结束回调
   final VertigoDragEndCallback? onDragEndCallback;
+
+  /// 是否启用
+  final bool enabled;
+
+  /// How this gesture detector should behave during hit testing.
+  ///
+  /// This defaults to [HitTestBehavior.deferToChild] if [child] is not null and
+  /// [HitTestBehavior.translucent] if child is null.
+  final HitTestBehavior? behavior;
+
+  /// Determines the way that drag start behavior is handled.
+  ///
+  /// If set to [DragStartBehavior.start], gesture drag behavior will
+  /// begin upon the detection of a drag gesture. If set to
+  /// [DragStartBehavior.down] it will begin when a down event is first detected.
+  ///
+  /// In general, setting this to [DragStartBehavior.start] will make drag
+  /// animation smoother and setting it to [DragStartBehavior.down] will make
+  /// drag behavior feel slightly more reactive.
+  ///
+  /// By default, the drag start behavior is [DragStartBehavior.start].
+  ///
+  /// Only the [DragGestureRecognizer.onStart] callbacks for the
+  /// [VerticalDragGestureRecognizer], [HorizontalDragGestureRecognizer] and
+  /// [PanGestureRecognizer] are affected by this setting.
+  ///
+  /// See also:
+  ///
+  ///  * [DragGestureRecognizer.dragStartBehavior], which gives an example for the different behaviors.
+  final DragStartBehavior dragStartBehavior;
 
   /// 超过边界回调
   final ValueChanged<Edge>? onOverEdge;
@@ -246,6 +280,9 @@ class _PreimageGalleryState extends State<PreimageGallery> {
         widget.onDragStartCallback?.call(details);
       },
       onDragEndCallback: widget.onDragEndCallback,
+      enabled: widget.enabled,
+      behavior: widget.behavior,
+      dragStartBehavior: widget.dragStartBehavior,
       child: NotificationListener<ScrollNotification>(
         onNotification: _onScrollNotification,
         child: PhotoViewGallery.builder(

@@ -3,6 +3,7 @@
  */
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 
 /// Created by box on 2020/4/21.
 ///
@@ -201,6 +202,8 @@ class VertigoPreview extends StatefulWidget {
     this.onDragStartCallback,
     this.onDragEndCallback,
     this.enabled = true,
+    this.behavior,
+    this.dragStartBehavior = DragStartBehavior.start,
   })  : assert(dragDamping == null || dragDamping > 0),
         assert(scaleDamping == null || scaleDamping > 0),
         dragDamping = dragDamping ?? _dragDamping,
@@ -245,6 +248,33 @@ class VertigoPreview extends StatefulWidget {
 
   /// 是否启用
   final bool enabled;
+
+  /// How this gesture detector should behave during hit testing.
+  ///
+  /// This defaults to [HitTestBehavior.deferToChild] if [child] is not null and
+  /// [HitTestBehavior.translucent] if child is null.
+  final HitTestBehavior? behavior;
+
+  /// Determines the way that drag start behavior is handled.
+  ///
+  /// If set to [DragStartBehavior.start], gesture drag behavior will
+  /// begin upon the detection of a drag gesture. If set to
+  /// [DragStartBehavior.down] it will begin when a down event is first detected.
+  ///
+  /// In general, setting this to [DragStartBehavior.start] will make drag
+  /// animation smoother and setting it to [DragStartBehavior.down] will make
+  /// drag behavior feel slightly more reactive.
+  ///
+  /// By default, the drag start behavior is [DragStartBehavior.start].
+  ///
+  /// Only the [DragGestureRecognizer.onStart] callbacks for the
+  /// [VerticalDragGestureRecognizer], [HorizontalDragGestureRecognizer] and
+  /// [PanGestureRecognizer] are affected by this setting.
+  ///
+  /// See also:
+  ///
+  ///  * [DragGestureRecognizer.dragStartBehavior], which gives an example for the different behaviors.
+  final DragStartBehavior dragStartBehavior;
 
   /// 获取[VertigoPreview]拖动参数
   static _VertigoPreviewScope? of(BuildContext context) {
@@ -411,7 +441,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       duration = widget.duration;
     }
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+      behavior: widget.behavior,
+      dragStartBehavior: widget.dragStartBehavior,
       onVerticalDragStart: widget.enabled ? _onVerticalDragStart : null,
       onVerticalDragUpdate: widget.enabled ? _onVerticalDragUpdate : null,
       onVerticalDragEnd: widget.enabled ? _onVerticalDragEnd : null,

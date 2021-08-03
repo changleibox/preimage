@@ -486,6 +486,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                   onPageChanged: _onPageChanged,
                   onDragStartCallback: _onDragStartCallback,
                   onDragEndCallback: _onDragEndCallback,
+                  behavior: HitTestBehavior.translucent,
                   onOverEdge: widget.onOverEdge,
                   itemCount: widget.images.length,
                   builder: _buildPageOptions,
