@@ -1,14 +1,20 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:preimage/preimage.dart';
+import 'package:preimage_example/prevideo.dart';
+import 'package:preimage_example/scheduler.dart';
 import 'package:video_player/video_player.dart';
 
 const String _testAvatarUrl = 'http://img.netbian.com/file/2020/1126/d80fba29d14a4dc832b73db9686d1fdd.jpg';
 
 /// 测试视频（人类清除计划）
 const String _testVideoUrl = 'https://vod4.buycar5.cn/20210718/lx14hBDC/index.m3u8';
+
+/// 返回[FutureOr]
+typedef FutureOrVoidCallback = FutureOr<void> Function();
 
 void main() {
   runApp(PluginExampleApp());
@@ -52,8 +58,8 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
     super.dispose();
   }
 
-  void _onPreviewPressed(int initialIndex) {
-    Preimage.preview<void>(
+  Future<void> _onPreviewPressed(int initialIndex) async {
+    await Preimage.preview<void>(
       context,
       images: List.generate(_images.length, _buildImageOptions),
       initialIndex: initialIndex,
@@ -78,10 +84,10 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
       final controller = image as VideoPlayerController;
       url = controller.dataSource;
       builder = (context) {
-        return VideoPlayerAvatar(
+        return Prevideo(
           controller: controller,
           fit: BoxFit.contain,
-          isAutoPlay: true,
+          usedOrigin: false,
         );
       };
     } else {
@@ -115,12 +121,9 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
             itemCount: _images.length,
             itemBuilder: (context, index) {
               return CupertinoButton(
-                borderRadius: BorderRadius.zero,
+                onPressed: () => _onPreviewPressed(index),
                 padding: EdgeInsets.zero,
                 minSize: 0,
-                onPressed: () {
-                  _onPreviewPressed(index);
-                },
                 child: _Avatar(
                   image: _images[index],
                   index: index,
@@ -151,7 +154,7 @@ class _Avatar extends StatelessWidget {
     if (image is VideoPlayerController) {
       final controller = image as VideoPlayerController;
       url = controller.dataSource;
-      child = VideoPlayerAvatar(
+      child = VideoPlayerItem(
         controller: controller,
         fit: BoxFit.cover,
       );
@@ -240,9 +243,9 @@ class BottomBar extends StatelessWidget {
 }
 
 /// 预览item
-class VideoPlayerAvatar extends StatefulWidget {
+class VideoPlayerItem extends StatefulWidget {
   /// 构造函数
-  const VideoPlayerAvatar({
+  const VideoPlayerItem({
     Key? key,
     required this.controller,
     this.fit = BoxFit.contain,
@@ -259,14 +262,14 @@ class VideoPlayerAvatar extends StatefulWidget {
   final bool isAutoPlay;
 
   @override
-  _VideoPlayerAvatarState createState() => _VideoPlayerAvatarState();
+  _VideoPlayerItemState createState() => _VideoPlayerItemState();
 }
 
-class _VideoPlayerAvatarState extends State<VideoPlayerAvatar> {
-  late final VideoPlayerController _controller;
-  late final VideoPlayerValue _parentValue;
+class _VideoPlayerItemState extends State<VideoPlayerItem> {
+  late VideoPlayerController _controller;
 
   Future<void>? _initializeFuture;
+  Scheduler? _scheduler;
 
   @override
   void initState() {
@@ -275,7 +278,7 @@ class _VideoPlayerAvatarState extends State<VideoPlayerAvatar> {
   }
 
   @override
-  void didUpdateWidget(covariant VideoPlayerAvatar oldWidget) {
+  void didUpdateWidget(covariant VideoPlayerItem oldWidget) {
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller.removeListener(_onChanged);
       _initializeController();
@@ -286,54 +289,26 @@ class _VideoPlayerAvatarState extends State<VideoPlayerAvatar> {
   void _initializeController() {
     _controller = widget.controller;
     _controller.addListener(_onChanged);
-    _parentValue = _controller.value;
-    if (!_parentValue.isInitialized) {
-      _initializeFuture = _controller.initialize()..whenComplete(_onInitialized);
-    } else {
-      _onInitialized();
+    if (!_controller.value.isInitialized) {
+      _initializeFuture = _controller.initialize();
     }
-  }
-
-  void _onInitialized() {
-    if (widget.isAutoPlay && mounted) {
-      _controller.play();
-    }
-  }
-
-  Future<void> _onDisposed() async {
-    if (!widget.isAutoPlay) {
-      return;
-    }
-    _controller.value = _parentValue;
-    await _controller.pause();
-    await _controller.seekTo(Duration.zero);
-  }
-
-  @override
-  void deactivate() {
-    _onDisposed();
-    super.deactivate();
   }
 
   @override
   void dispose() {
     _controller.removeListener(_onChanged);
+    _scheduler?.cancel();
     super.dispose();
   }
 
   void _onChanged() {
-    void callback([dynamic value]) {
+    _scheduler?.cancel();
+    _scheduler = Scheduler.postFrame(() {
       if (!mounted) {
         return;
       }
       setState(() {});
-    }
-
-    if (SchedulerBinding.instance!.schedulerPhase == SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance!.addPostFrameCallback(callback);
-    } else {
-      callback();
-    }
+    });
   }
 
   @override

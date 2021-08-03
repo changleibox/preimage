@@ -414,7 +414,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   ImageProvider _buildImageProvider(BuildContext context, int index) {
     final url = widget.images[index].url;
-    if (url!.startsWith('http')) {
+    if (url!.startsWith(RegExp(r'http|https'))) {
       return CachedNetworkImageProvider(url);
     } else {
       return FileImage(File(url));
