@@ -340,8 +340,9 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
   }
 
   bool _onDragEndCallback(Offset dragDistance, double? velocity) {
+    final dy = dragDistance.dy;
     velocity ??= 0;
-    if (dragDistance.dy > _kMaxDragDistance / 2 || velocity >= _kMaxDragVelocity) {
+    if (dy > _kMaxDragDistance / 2 || (dy >= 0 && velocity >= _kMaxDragVelocity)) {
       _onBackPressed();
       return true;
     }
