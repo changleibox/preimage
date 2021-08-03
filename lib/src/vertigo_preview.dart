@@ -124,8 +124,18 @@ typedef VertigoDragEndCallback = bool Function(
 );
 
 /// controller
-class VertigoPreviewController {
+class VertigoPreviewController extends ChangeNotifier {
   _VertigoPreviewState? _state;
+
+  DragNotification? _notification;
+
+  void _notify(DragNotification notification) {
+    if (_notification == notification) {
+      return;
+    }
+    _notification = notification;
+    notifyListeners();
+  }
 
   /// 重置
   void reset() {
@@ -140,6 +150,13 @@ class VertigoPreviewController {
   /// 显示bar
   bool switchBar(bool show) {
     return _state?._switchBar(show) == true;
+  }
+
+  @override
+  void dispose() {
+    _state = null;
+    _notification = null;
+    super.dispose();
   }
 }
 
@@ -234,7 +251,9 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragStart(DragStartDetails details) {
     widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
-    DragStartNotification(details: details).dispatch(context);
+    final notification = DragStartNotification(details: details);
+    notification.dispatch(context);
+    widget.controller?._notify(notification);
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
@@ -245,12 +264,14 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     final damping = _dragDistance.dy.abs() / dampingDistance;
     _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
     setState(() {});
-    DragUpdateNotification(
+    final notification = DragUpdateNotification(
       details: details,
       startPosition: _startPosition,
       dragDistance: _dragDistance,
       offset: _animation.value,
-    ).dispatch(context);
+    );
+    notification.dispatch(context);
+    widget.controller?._notify(notification);
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
@@ -261,7 +282,9 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     } else {
       _reset();
     }
-    DragEndNotification(details: details).dispatch(context);
+    final notification = DragEndNotification(details: details);
+    notification.dispatch(context);
+    widget.controller?._notify(notification);
   }
 
   void _reset() {

@@ -125,6 +125,7 @@ class _PreimageGalleryState extends State<PreimageGallery> {
   @override
   void dispose() {
     _pageController.dispose();
+    _vertigoController.dispose();
     super.dispose();
   }
 
