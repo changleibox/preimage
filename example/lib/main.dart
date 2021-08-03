@@ -83,10 +83,8 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
       final url = controller.dataSource;
       return ImageOptions.child(
         url: url,
-        child: Prevideo(
+        child: VideoPreview(
           controller: controller,
-          fit: BoxFit.contain,
-          usedOrigin: false,
           heroTag: [url, index].join('_'),
         ),
       );
@@ -245,6 +243,49 @@ class BottomBar extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// 视频预览
+class VideoPreview extends StatefulWidget {
+  /// 构造函数
+  const VideoPreview({
+    Key? key,
+    required this.controller,
+    this.heroTag,
+  }) : super(key: key);
+
+  /// controller
+  final VideoPlayerController controller;
+
+  /// heroTag
+  final String? heroTag;
+
+  @override
+  _VideoPreviewState createState() => _VideoPreviewState();
+}
+
+class _VideoPreviewState extends State<VideoPreview> {
+  var _fit = BoxFit.contain;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onDoubleTap: () {
+        if (_fit == BoxFit.contain) {
+          _fit = BoxFit.cover;
+        } else {
+          _fit = BoxFit.contain;
+        }
+        setState(() {});
+      },
+      child: Prevideo(
+        controller: widget.controller,
+        fit: _fit,
+        usedOrigin: false,
+        heroTag: widget.heroTag,
       ),
     );
   }
