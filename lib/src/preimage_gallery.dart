@@ -114,7 +114,9 @@ class _PreimageGalleryState extends State<PreimageGallery> {
     _pageController = PageController(
       initialPage: widget.initialIndex,
     );
-    _pageController.addListener(_vertigoController.reset);
+    _pageController.addListener(() {
+      _vertigoController.display(true);
+    });
     super.initState();
   }
 
@@ -154,20 +156,19 @@ class _PreimageGalleryState extends State<PreimageGallery> {
   }
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    bool result;
     switch (scaleState) {
       case PhotoViewScaleState.covering:
       case PhotoViewScaleState.originalSize:
       case PhotoViewScaleState.zoomedIn:
-        result = _vertigoController.display(false);
+        _vertigoController.display(false);
         break;
       case PhotoViewScaleState.initial:
       case PhotoViewScaleState.zoomedOut:
       default:
-        result = _vertigoController.display(true);
+        _vertigoController.display(true);
         break;
     }
-    if (result && widget.onScaleStateChanged != null) {
+    if (widget.onScaleStateChanged != null) {
       widget.onScaleStateChanged!(scaleState);
     }
   }

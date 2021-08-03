@@ -84,7 +84,7 @@ class DragUpdateNotification extends DragNotification {
     description.add('details: $details');
     description.add('startPosition: $startPosition');
     description.add('dragDistance: $dragDistance');
-    description.add('opacity: $offset');
+    description.add('offset: $offset');
   }
 }
 
@@ -167,23 +167,10 @@ class VertigoPreviewController extends ChangeNotifier {
     );
   }
 
-  /// 重置
-  void reset() {
-    _checkStateNotNull();
-    _state!._reset();
-  }
-
-  /// 消失
-  void dismiss() {
-    _checkStateNotNull();
-    _state!._dismiss();
-  }
-
   /// 切换显示状态，[value]为true，则显示，false则不显示
-  /// 返回是否切换了状态
-  bool display(bool value) {
+  void display(bool value) {
     _checkStateNotNull();
-    return _state!._display(value) == true;
+    _state!._display(value);
   }
 
   @override
@@ -289,7 +276,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       curve: Curves.fastOutSlowIn,
       reverseCurve: Curves.fastOutSlowIn,
     );
-    _reset();
+    _display(true);
     super.initState();
   }
 
@@ -355,30 +342,10 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity;
     final onDragEndCallback = widget.onDragEndCallback;
-    if (onDragEndCallback?.call(_dragDistance, velocity) == true) {
-      _dismiss();
-    } else {
-      _reset();
-    }
+    _display(onDragEndCallback?.call(_dragDistance, velocity) != true);
     DragEndNotification(
       details: details,
     ).dispatch(context);
-  }
-
-  void _reset() {
-    _startPosition = Offset.zero;
-    _dragDistance = Offset.zero;
-    _animationController.forward();
-    setState(() {});
-    _notifyController();
-  }
-
-  void _dismiss() {
-    _startPosition = Offset.zero;
-    _dragDistance = Offset.zero;
-    _animationController.reverse();
-    setState(() {});
-    _notifyController();
   }
 
   void _notifyController() {
@@ -389,16 +356,16 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     );
   }
 
-  bool _display(bool value) {
-    if (MatrixUtils.getAsTranslation(_transform) != Offset.zero) {
-      return false;
-    }
+  void _display(bool value) {
+    _startPosition = Offset.zero;
+    _dragDistance = Offset.zero;
     if (value) {
       _animationController.forward();
     } else {
       _animationController.reverse();
     }
-    return true;
+    setState(() {});
+    _notifyController();
   }
 
   Widget? _buildNavigationBar() {
