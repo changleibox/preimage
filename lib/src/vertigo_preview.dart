@@ -144,6 +144,7 @@ class VertigoPreview extends StatefulWidget {
   const VertigoPreview({
     Key? key,
     required this.child,
+    this.controller,
     this.navigationBarBuilder,
     this.bottomBarBuilder,
     this.onPressed,
@@ -157,6 +158,9 @@ class VertigoPreview extends StatefulWidget {
 
   /// child
   final Widget child;
+
+  /// controller
+  final VertigoPreviewController? controller;
 
   /// 构建navigationBar
   final WidgetBuilder? navigationBarBuilder;
@@ -198,7 +202,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
 
   @override
   void initState() {
-    super.initState();
+    widget.controller?._state = this;
     _animationController = AnimationController(
       duration: _kDuration,
       vsync: this,
@@ -209,6 +213,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       reverseCurve: Curves.fastOutSlowIn,
     );
     _reset();
+    super.initState();
   }
 
   @override

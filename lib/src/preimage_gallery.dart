@@ -201,6 +201,7 @@ class _PreimageGalleryState extends State<PreimageGallery> {
         return false;
       },
       child: VertigoPreview(
+        controller: _vertigoController,
         duration: widget.duration,
         navigationBarBuilder: navigationBar == null ? null : (context) => navigationBar,
         bottomBarBuilder: bottomBar == null ? null : (context) => bottomBar,
