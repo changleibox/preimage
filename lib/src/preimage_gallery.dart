@@ -15,7 +15,7 @@ const Duration _kDuration = Duration(
 );
 
 /// 构建navigationBar
-typedef PreimageNavigationBuilder = Widget? Function(
+typedef PreimageBarBuilder = Widget Function(
   BuildContext context,
   int index,
   int count,
@@ -56,10 +56,10 @@ class PreimageGallery extends StatefulWidget {
   final ValueChanged<int>? onPageChanged;
 
   /// 构建navigationBar
-  final PreimageNavigationBuilder? navigationBarBuilder;
+  final PreimageBarBuilder? navigationBarBuilder;
 
   /// 构建bottomBar
-  final PreimageNavigationBuilder? bottomBarBuilder;
+  final PreimageBarBuilder? bottomBarBuilder;
 
   /// 点击
   final ValueChanged<int>? onPressed;
@@ -168,43 +168,31 @@ class _PreimageGalleryState extends State<PreimageGallery> {
     }
   }
 
-  Widget? _buildNavigationBar(BuildContext context) {
-    if (widget.navigationBarBuilder == null) {
-      return null;
-    }
-    return widget.navigationBarBuilder!(
+  Widget _buildNavigationBar(BuildContext context) {
+    return widget.navigationBarBuilder!.call(
       context,
       _currentIndex,
       widget.itemCount,
     );
   }
 
-  Widget? _buildBottomBar(BuildContext context) {
-    Widget? bottomBar;
-    if (widget.bottomBarBuilder != null) {
-      bottomBar = widget.bottomBarBuilder!(
-        context,
-        _currentIndex,
-        widget.itemCount,
-      );
-    }
-    if (bottomBar != null) {
-      bottomBar = SingleChildScrollView(
-        child: bottomBar,
-      );
-    }
-    return bottomBar;
+  Widget _buildBottomBar(BuildContext context) {
+    return widget.bottomBarBuilder!.call(
+      context,
+      _currentIndex,
+      widget.itemCount,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final navigationBar = _buildNavigationBar(context);
-    final bottomBar = _buildBottomBar(context);
+    final hasNavigationBar = widget.navigationBarBuilder != null;
+    final hasBottomBar = widget.bottomBarBuilder != null;
     return VertigoPreview(
       controller: _vertigoController,
       duration: widget.duration,
-      navigationBarBuilder: navigationBar == null ? null : (context) => navigationBar,
-      bottomBarBuilder: bottomBar == null ? null : (context) => bottomBar,
+      navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
+      bottomBarBuilder: hasBottomBar ? _buildBottomBar : null,
       dampingDistance: widget.dampingDistance,
       onPressed: _onTap,
       onDoublePressed: _onDoubleTap,

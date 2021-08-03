@@ -49,7 +49,7 @@ class Preimage {
     required List<ImageOptions?>? images,
     ValueChanged<int>? onIndexChanged,
     PreimageNavigationBarBuilder? navigationBarBuilder = _buildNavigationBar,
-    PreimageNavigationBuilder? bottomBarBuilder,
+    PreimageBarBuilder? bottomBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
     ValueChanged<Edge>? onOverEdge,
     bool rootNavigator = false,
@@ -295,7 +295,7 @@ class PreimagePage extends StatefulWidget {
   final PreimageNavigationBarBuilder? navigationBarBuilder;
 
   /// 构建预览页面的bottomBar
-  final PreimageNavigationBuilder? bottomBarBuilder;
+  final PreimageBarBuilder? bottomBarBuilder;
 
   /// 长按回调
   final ValueChanged<ImageOptions>? onLongPressed;
@@ -420,10 +420,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     );
   }
 
-  Widget? _buildNavigationBar(BuildContext context, int index, int count) {
-    if (widget.navigationBarBuilder == null) {
-      return null;
-    }
+  Widget _buildNavigationBar(BuildContext context, int index, int count) {
     return widget.navigationBarBuilder!(
       context,
       index,
@@ -478,6 +475,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final duration = _offset == 1.0 ? _kDuration : Duration.zero;
     final queryData = MediaQuery.of(context);
+    final hasNavigationBar = widget.navigationBarBuilder != null;
     return CupertinoTheme(
       data: CupertinoTheme.of(context).copyWith(
         primaryColor: CupertinoColors.white,
@@ -500,7 +498,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                   onNotification: _onScrollNotification,
                   child: PreimageGallery.builder(
                     initialIndex: widget.initialIndex,
-                    navigationBarBuilder: _buildNavigationBar,
+                    navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
                     bottomBarBuilder: widget.bottomBarBuilder,
                     loadingBuilder: _buildLoading,
                     duration: _kDuration,

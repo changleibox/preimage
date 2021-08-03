@@ -353,18 +353,12 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   }
 
   Widget? _buildBottomBar() {
-    Widget? bottomBar;
-    if (widget.bottomBarBuilder != null) {
-      bottomBar = Builder(
-        builder: widget.bottomBarBuilder!,
-      );
+    if (widget.bottomBarBuilder == null) {
+      return null;
     }
-    if (bottomBar != null) {
-      bottomBar = SingleChildScrollView(
-        child: bottomBar,
-      );
-    }
-    return bottomBar;
+    return Builder(
+      builder: widget.bottomBarBuilder!,
+    );
   }
 
   Matrix4 get _transform {
