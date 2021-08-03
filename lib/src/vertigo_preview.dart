@@ -113,7 +113,7 @@ class DragEndNotification extends DragNotification {
 }
 
 /// 拖拽结束回调
-typedef DragEndCallback = bool Function(
+typedef VertigoDragEndCallback = bool Function(
   Offset dragDistance,
   double? velocity,
 );
@@ -180,7 +180,7 @@ class VertigoPreview extends StatefulWidget {
   final Duration duration;
 
   /// 拖拽结束回调
-  final DragEndCallback? onDragEndCallback;
+  final VertigoDragEndCallback? onDragEndCallback;
 
   /// 是否启用
   final bool enabled;

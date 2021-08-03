@@ -5,7 +5,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import 'package:preimage/src/vertigo_preview.dart' as vertigo;
+import 'package:preimage/src/vertigo_preview.dart';
 
 /// Created by box on 2020/4/21.
 ///
@@ -88,14 +88,14 @@ class PreimageGallery extends StatefulWidget {
   final Duration duration;
 
   /// 拖拽结束回调
-  final vertigo.DragEndCallback? onDragEndCallback;
+  final VertigoDragEndCallback? onDragEndCallback;
 
   @override
   _PreimageGalleryState createState() => _PreimageGalleryState();
 }
 
 class _PreimageGalleryState extends State<PreimageGallery> {
-  final _vertigoController = vertigo.VertigoPreviewController();
+  final _vertigoController = VertigoPreviewController();
 
   late int _currentIndex = 0;
   late PageController _pageController;
@@ -195,12 +195,12 @@ class _PreimageGalleryState extends State<PreimageGallery> {
   Widget build(BuildContext context) {
     final navigationBar = _buildNavigationBar(context);
     final bottomBar = _buildBottomBar(context);
-    return NotificationListener<vertigo.DragStartNotification>(
+    return NotificationListener<DragStartNotification>(
       onNotification: (notification) {
         _pageController.jumpToPage(_currentIndex);
         return false;
       },
-      child: vertigo.VertigoPreview(
+      child: VertigoPreview(
         duration: widget.duration,
         navigationBarBuilder: navigationBar == null ? null : (context) => navigationBar,
         bottomBarBuilder: bottomBar == null ? null : (context) => bottomBar,
