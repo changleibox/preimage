@@ -403,11 +403,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     if (widget.topBarBuilder == null) {
       return null;
     }
-    return Container(
-      width: double.infinity,
-      child: Builder(
-        builder: widget.topBarBuilder!,
-      ),
+    return Builder(
+      builder: widget.topBarBuilder!,
     );
   }
 
@@ -415,11 +412,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     if (widget.bottomBarBuilder == null) {
       return null;
     }
-    return Container(
-      width: double.infinity,
-      child: Builder(
-        builder: widget.bottomBarBuilder!,
-      ),
+    return Builder(
+      builder: widget.bottomBarBuilder!,
     );
   }
 
@@ -465,45 +459,61 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
           ),
           Positioned.fill(
             top: null,
-            child: _AnimatedOverlay(
-              listenable: _actualAnimation,
-              axisAlignment: -1,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      CupertinoColors.black.withOpacity(0.0),
-                      CupertinoColors.black.withOpacity(0.6),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: _buildBottomBar(),
-              ),
+            child: _AnimatedOverlayBar(
+              animation: _actualAnimation,
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              child: _buildBottomBar(),
             ),
           ),
           Positioned.fill(
             bottom: null,
-            child: _AnimatedOverlay(
-              listenable: _actualAnimation,
-              axisAlignment: 1,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      CupertinoColors.black.withOpacity(0.6),
-                      CupertinoColors.black.withOpacity(0.0),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: _buildTopBar(),
-              ),
+            child: _AnimatedOverlayBar(
+              animation: _actualAnimation,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              child: _buildTopBar(),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedOverlayBar extends StatelessWidget {
+  const _AnimatedOverlayBar({
+    Key? key,
+    required this.animation,
+    required this.begin,
+    required this.end,
+    required this.child,
+  }) : super(key: key);
+
+  final Animation animation;
+  final Alignment begin;
+  final Alignment end;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    const color = CupertinoColors.black;
+    return _AnimatedOverlay(
+      listenable: animation,
+      axisAlignment: -begin.y,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.6),
+              color.withOpacity(0.0),
+            ],
+            begin: begin,
+            end: end,
+          ),
+        ),
+        child: child,
       ),
     );
   }
