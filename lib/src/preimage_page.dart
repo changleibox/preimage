@@ -12,9 +12,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:preimage/src/preimage_gallery.dart';
 import 'package:preimage/src/preimage_route.dart';
-import 'package:preimage/src/preimage_view.dart';
 import 'package:preimage/src/primitive_navigation_bar.dart';
+import 'package:preimage/src/vertigo_preview.dart';
 
 const double _kMaxDragVelocity = 100;
 const double _kMaxDragDistance = 200;
@@ -308,7 +309,7 @@ class PreimagePage extends StatefulWidget {
 
 class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
-  double _opacity = 1.0;
+  double _offset = 1.0;
   bool _notifyOverEdge = true;
 
   @override
@@ -338,20 +339,21 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     }
   }
 
-  bool _onDragEndCallback(double dragDistance, double? velocity) {
+  bool _onDragEndCallback(Offset dragDistance, double? velocity) {
     velocity ??= 0;
-    if (dragDistance > _kMaxDragDistance / 2 || velocity >= _kMaxDragVelocity) {
+    if (dragDistance.dy > _kMaxDragDistance / 2 || velocity >= _kMaxDragVelocity) {
       _onBackPressed();
       return true;
     }
+    _offset = 1.0;
     return false;
   }
 
   bool _onDragNotification(DragNotification notification) {
     if (notification is DragUpdateNotification) {
-      _opacity = notification.opacity;
-    } else {
-      _opacity = 1.0;
+      _offset = notification.offset;
+    } else if (notification is DragStartNotification) {
+      _offset = 1.0;
     }
     setState(() {});
     return false;
@@ -462,7 +464,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final duration = _opacity == 1.0 ? _kDuration : Duration.zero;
+    final duration = _offset == 1.0 ? _kDuration : Duration.zero;
     final queryData = MediaQuery.of(context);
     return CupertinoTheme(
       data: CupertinoTheme.of(context).copyWith(
@@ -479,18 +481,18 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
             ),
             child: AnimatedContainer(
               duration: duration,
-              color: CupertinoColors.black.withOpacity(_opacity),
+              color: CupertinoColors.black.withOpacity(_offset),
               child: NotificationListener<DragNotification>(
                 onNotification: _onDragNotification,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: _onScrollNotification,
-                  child: PreimageView.builder(
+                  child: PreimageGallery.builder(
                     initialIndex: widget.initialIndex,
                     navigationBarBuilder: _buildNavigationBar,
                     bottomBarBuilder: widget.bottomBarBuilder,
                     loadingBuilder: _buildLoading,
                     duration: _kDuration,
-                    dragReferenceDistance: _kMaxDragDistance,
+                    dampingDistance: _kMaxDragDistance,
                     onPressed: _onPressed,
                     onLongPressed: _onLongPressed,
                     onPageChanged: _onPageChanged,
