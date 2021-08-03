@@ -317,8 +317,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragStart(DragStartDetails details) {
     widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
-    setState(() {});
-    _notifyController();
+    _notify();
     DragStartNotification(
       details: details,
     ).dispatch(context);
@@ -329,8 +328,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
 
     final damping = _dragDistance.dy.abs() / widget.dragDamping;
     _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
-    setState(() {});
-    _notifyController();
+    _notify();
     DragUpdateNotification(
       details: details,
       startPosition: _startPosition,
@@ -348,14 +346,6 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     ).dispatch(context);
   }
 
-  void _notifyController() {
-    widget.controller?._notify(
-      _actualAnimation,
-      _startPosition,
-      _dragDistance,
-    );
-  }
-
   void _display(bool value) {
     _startPosition = Offset.zero;
     _dragDistance = Offset.zero;
@@ -364,8 +354,19 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     } else {
       _animationController.reverse();
     }
+    _notify();
+  }
+
+  void _notify() {
+    if (!mounted) {
+      return;
+    }
     setState(() {});
-    _notifyController();
+    widget.controller?._notify(
+      _actualAnimation,
+      _startPosition,
+      _dragDistance,
+    );
   }
 
   Widget? _buildNavigationBar() {
