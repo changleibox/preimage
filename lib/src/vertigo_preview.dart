@@ -10,6 +10,8 @@ import 'package:flutter/cupertino.dart';
 const Duration _kDuration = Duration(
   milliseconds: 300,
 );
+const _dragDamping = 200.0;
+const _scaleDamping = 400.0;
 
 /// 拖拽通知
 class DragNotification extends Notification {}
@@ -172,12 +174,17 @@ class VertigoPreview extends StatefulWidget {
     this.onPressed,
     this.onDoublePressed,
     this.onLongPressed,
-    this.dampingDistance,
+    double? dragDamping,
+    double? scaleDamping,
     this.duration = _kDuration,
     this.onDragStartCallback,
     this.onDragEndCallback,
     this.enabled = true,
-  }) : super(key: key);
+  })  : assert(dragDamping == null || dragDamping > 0),
+        assert(scaleDamping == null || scaleDamping > 0),
+        dragDamping = dragDamping ?? _dragDamping,
+        scaleDamping = scaleDamping ?? _scaleDamping,
+        super(key: key);
 
   /// child
   final Widget child;
@@ -200,8 +207,11 @@ class VertigoPreview extends StatefulWidget {
   /// 双击
   final VoidCallback? onLongPressed;
 
-  /// 组大拖拽距离
-  final double? dampingDistance;
+  /// 拖拽阻尼
+  final double dragDamping;
+
+  /// 缩放阻尼
+  final double scaleDamping;
 
   /// 页面可动元素的动画时长
   final Duration duration;
@@ -289,9 +299,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     _dragDistance = details.localPosition - _startPosition;
 
-    final size = MediaQuery.of(context).size;
-    final dampingDistance = widget.dampingDistance ?? (size.height * 2);
-    final damping = _dragDistance.dy.abs() / dampingDistance;
+    final damping = _dragDistance.dy.abs() / widget.dragDamping;
     _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
     setState(() {});
     final notification = DragUpdateNotification(
@@ -368,8 +376,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   }
 
   Matrix4 get _transform {
-    final height = MediaQuery.of(context).size.height;
-    final scale = 1.0 - _dragDistance.dy.abs() / (height * 2);
+    final damping = _dragDistance.dy.abs() / widget.scaleDamping;
+    final scale = 1.0 - damping.clamp(0, 1);
     final translation = _dragDistance + _startPosition * (1 - scale);
     return Matrix4.translationValues(
       translation.dx,

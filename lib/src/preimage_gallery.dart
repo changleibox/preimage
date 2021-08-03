@@ -30,7 +30,7 @@ typedef ImageProviderBuilder = ImageProvider Function(
 /// 图片预览
 class PreimageGallery extends StatefulWidget {
   /// 图片预览
-  const PreimageGallery.builder({
+  const PreimageGallery({
     Key? key,
     this.initialIndex = 0,
     required this.itemCount,
@@ -43,7 +43,8 @@ class PreimageGallery extends StatefulWidget {
     this.onLongPressed,
     this.onScaleStateChanged,
     this.loadingBuilder,
-    this.dampingDistance,
+    this.dragDamping,
+    this.scaleDamping,
     this.duration = _kDuration,
     this.onDragStartCallback,
     this.onDragEndCallback,
@@ -82,8 +83,11 @@ class PreimageGallery extends StatefulWidget {
   /// Called to build items for the gallery when using [PhotoViewGallery.builder]
   final PhotoViewGalleryBuilder builder;
 
-  /// 组大拖拽距离
-  final double? dampingDistance;
+  /// 拖拽阻尼距离
+  final double? dragDamping;
+
+  /// 缩放阻尼距离
+  final double? scaleDamping;
 
   /// 页面可动元素的动画时长
   final Duration duration;
@@ -193,7 +197,8 @@ class _PreimageGalleryState extends State<PreimageGallery> {
       duration: widget.duration,
       navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
       bottomBarBuilder: hasBottomBar ? _buildBottomBar : null,
-      dampingDistance: widget.dampingDistance,
+      dragDamping: widget.dragDamping,
+      scaleDamping: widget.scaleDamping,
       onPressed: _onTap,
       onDoublePressed: _onDoubleTap,
       onLongPressed: _onLongPress,

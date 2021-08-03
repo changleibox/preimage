@@ -17,8 +17,8 @@ import 'package:preimage/src/preimage_route.dart';
 import 'package:preimage/src/primitive_navigation_bar.dart';
 import 'package:preimage/src/vertigo_preview.dart';
 
-const double _kMaxDragVelocity = 100;
-const double _kMaxDragDistance = 200;
+const double _dragVelocity = 100;
+const double _dragDamping = 200;
 const Duration _kDuration = Duration(milliseconds: 300);
 
 /// 构建navigationBar
@@ -350,7 +350,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
   bool _onDragEndCallback(Offset dragDistance, double? velocity) {
     final dy = dragDistance.dy;
     velocity ??= 0;
-    if (dy > _kMaxDragDistance / 2 || (dy >= 0 && velocity >= _kMaxDragVelocity)) {
+    if (dy >= _dragDamping / 2 || (dy >= 0 && velocity >= _dragVelocity)) {
       _onBackPressed();
       return true;
     }
@@ -496,13 +496,14 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                 onNotification: _onDragNotification,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: _onScrollNotification,
-                  child: PreimageGallery.builder(
+                  child: PreimageGallery(
                     initialIndex: widget.initialIndex,
                     navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
                     bottomBarBuilder: widget.bottomBarBuilder,
                     loadingBuilder: _buildLoading,
                     duration: _kDuration,
-                    dampingDistance: _kMaxDragDistance,
+                    dragDamping: _dragDamping,
+                    scaleDamping: queryData.size.height * 2,
                     onPressed: _onPressed,
                     onLongPressed: _onLongPressed,
                     onPageChanged: _onPageChanged,
