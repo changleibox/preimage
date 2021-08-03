@@ -159,12 +159,12 @@ class _PreimageGalleryState extends State<PreimageGallery> {
       case PhotoViewScaleState.covering:
       case PhotoViewScaleState.originalSize:
       case PhotoViewScaleState.zoomedIn:
-        result = _vertigoController.switchBar(false);
+        result = _vertigoController.display(false);
         break;
       case PhotoViewScaleState.initial:
       case PhotoViewScaleState.zoomedOut:
       default:
-        result = _vertigoController.switchBar(true);
+        result = _vertigoController.display(true);
         break;
     }
     if (result && widget.onScaleStateChanged != null) {

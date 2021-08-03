@@ -128,36 +128,70 @@ typedef VertigoDragEndCallback = bool Function(
 /// controller
 class VertigoPreviewController extends ChangeNotifier {
   _VertigoPreviewState? _state;
+  Animation<double>? _animation;
+  Offset? _startPosition;
+  Offset? _dragDistance;
 
-  DragNotification? _notification;
+  /// 拖动offset
+  Animation<double> get animation {
+    _checkStateNotNull();
+    return _animation!;
+  }
 
-  void _notify(DragNotification notification) {
-    if (_notification == notification) {
+  /// 拖动的其实位置
+  Offset get startPosition {
+    _checkStateNotNull();
+    return _startPosition!;
+  }
+
+  /// 拖动的距离
+  Offset get dragDistance {
+    _checkStateNotNull();
+    return _dragDistance!;
+  }
+
+  void _notify(Animation<double> animation, Offset startPosition, Offset dragDistance) {
+    if (_animation == animation && _startPosition == startPosition && _dragDistance == dragDistance) {
       return;
     }
-    _notification = notification;
+    _animation = animation;
+    _startPosition = startPosition;
+    _dragDistance = dragDistance;
     notifyListeners();
+  }
+
+  void _checkStateNotNull() {
+    assert(
+      _state != null,
+      '未绑定到`VertigoPreview`，或已接触就绑定',
+    );
   }
 
   /// 重置
   void reset() {
-    _state?._reset();
+    _checkStateNotNull();
+    _state!._reset();
   }
 
   /// 消失
   void dismiss() {
-    _state?._dismiss();
+    _checkStateNotNull();
+    _state!._dismiss();
   }
 
-  /// 显示bar
-  bool switchBar(bool show) {
-    return _state?._switchBar(show) == true;
+  /// 切换显示状态，[value]为true，则显示，false则不显示
+  /// 返回是否切换了状态
+  bool display(bool value) {
+    _checkStateNotNull();
+    return _state!._display(value) == true;
   }
 
   @override
   void dispose() {
     _state = null;
-    _notification = null;
+    _animation = null;
+    _startPosition = null;
+    _dragDistance = null;
     super.dispose();
   }
 }
@@ -225,6 +259,11 @@ class VertigoPreview extends StatefulWidget {
   /// 是否启用
   final bool enabled;
 
+  /// 获取[VertigoPreview]拖动参数
+  static _VertigoPreviewScope? of(BuildContext context) {
+    return _VertigoPreviewScope.of(context);
+  }
+
   @override
   _VertigoPreviewState createState() => _VertigoPreviewState();
 }
@@ -291,9 +330,11 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragStart(DragStartDetails details) {
     widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
-    final notification = DragStartNotification(details: details);
-    notification.dispatch(context);
-    widget.controller?._notify(notification);
+    setState(() {});
+    _notifyController();
+    DragStartNotification(
+      details: details,
+    ).dispatch(context);
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
@@ -302,14 +343,13 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     final damping = _dragDistance.dy.abs() / widget.dragDamping;
     _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
     setState(() {});
-    final notification = DragUpdateNotification(
+    _notifyController();
+    DragUpdateNotification(
       details: details,
       startPosition: _startPosition,
       dragDistance: _dragDistance,
       offset: _animation.value,
-    );
-    notification.dispatch(context);
-    widget.controller?._notify(notification);
+    ).dispatch(context);
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
@@ -320,9 +360,9 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     } else {
       _reset();
     }
-    final notification = DragEndNotification(details: details);
-    notification.dispatch(context);
-    widget.controller?._notify(notification);
+    DragEndNotification(
+      details: details,
+    ).dispatch(context);
   }
 
   void _reset() {
@@ -330,6 +370,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     _dragDistance = Offset.zero;
     _animationController.forward();
     setState(() {});
+    _notifyController();
   }
 
   void _dismiss() {
@@ -337,13 +378,22 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     _dragDistance = Offset.zero;
     _animationController.reverse();
     setState(() {});
+    _notifyController();
   }
 
-  bool _switchBar(bool show) {
+  void _notifyController() {
+    widget.controller?._notify(
+      _actualAnimation,
+      _startPosition,
+      _dragDistance,
+    );
+  }
+
+  bool _display(bool value) {
     if (MatrixUtils.getAsTranslation(_transform) != Offset.zero) {
       return false;
     }
-    if (show) {
+    if (value) {
       _animationController.forward();
     } else {
       _animationController.reverse();
@@ -407,7 +457,12 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
             transform: _transform,
             duration: duration,
             curve: Curves.fastOutSlowIn,
-            child: widget.child,
+            child: _VertigoPreviewScope(
+              animation: _actualAnimation,
+              startPosition: _startPosition,
+              dragDistance: _dragDistance,
+              child: widget.child,
+            ),
           ),
           Positioned.fill(
             top: null,
@@ -486,5 +541,33 @@ class _AnimatedOverlay extends AnimatedWidget {
         child: child,
       ),
     );
+  }
+}
+
+class _VertigoPreviewScope extends InheritedWidget {
+  const _VertigoPreviewScope({
+    Key? key,
+    required Widget child,
+    required this.animation,
+    required this.startPosition,
+    required this.dragDistance,
+  }) : super(key: key, child: child);
+
+  /// 拖动offset
+  final Animation<double> animation;
+
+  /// 拖动的其实位置
+  final Offset startPosition;
+
+  /// 拖动的距离
+  final Offset dragDistance;
+
+  static _VertigoPreviewScope? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_VertigoPreviewScope>();
+  }
+
+  @override
+  bool updateShouldNotify(_VertigoPreviewScope old) {
+    return animation != old.animation || startPosition != old.startPosition || dragDistance != old.dragDistance;
   }
 }
