@@ -406,35 +406,18 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
             child: _AnimatedOverlay(
               listenable: _actualAnimation,
               axisAlignment: -1,
-              child: DefaultTextStyle(
-                style: DefaultTextStyle.of(context).style.copyWith(
-                  shadows: [
-                    BoxShadow(
-                      color: CupertinoColors.black.withOpacity(0.6),
-                      blurRadius: 0.8,
-                      offset: const Offset(0, 1.0),
-                    ),
-                  ],
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        CupertinoColors.black.withOpacity(0.0),
-                        CupertinoColors.black.withOpacity(0.6),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      CupertinoColors.black.withOpacity(0.0),
+                      CupertinoColors.black.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  constraints: BoxConstraints(
-                    minWidth: double.infinity,
-                    maxWidth: double.infinity,
-                    minHeight: 0,
-                    maxHeight: MediaQuery.of(context).size.height / 4,
-                  ),
-                  child: _buildBottomBar(),
                 ),
+                child: _buildBottomBar(),
               ),
             ),
           ),
