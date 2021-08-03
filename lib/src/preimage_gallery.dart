@@ -7,27 +7,21 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:preimage/src/vertigo_preview.dart';
 
-/// Created by box on 2020/4/21.
-///
-/// 图片预览控件
-const Duration _kDuration = Duration(
+/// 默认的动画执行时间
+const _kDuration = Duration(
   milliseconds: 300,
 );
 
-/// 构建navigationBar
+/// 构建topBar和bottomBar
 typedef PreimageBarBuilder = Widget Function(
   BuildContext context,
   int index,
   int count,
 );
 
-/// 构建Provider
-typedef ImageProviderBuilder = ImageProvider Function(
-  BuildContext context,
-  int index,
-);
-
-/// 图片预览
+/// Created by box on 2020/4/21.
+///
+/// 图片预览控件
 class PreimageGallery extends StatefulWidget {
   /// 图片预览
   const PreimageGallery({
@@ -36,7 +30,7 @@ class PreimageGallery extends StatefulWidget {
     required this.itemCount,
     required this.builder,
     this.onPageChanged,
-    this.navigationBarBuilder,
+    this.topBarBuilder,
     this.bottomBarBuilder,
     this.onPressed,
     this.onDoublePressed,
@@ -56,8 +50,8 @@ class PreimageGallery extends StatefulWidget {
   /// 图片左右切换时回调
   final ValueChanged<int>? onPageChanged;
 
-  /// 构建navigationBar
-  final PreimageBarBuilder? navigationBarBuilder;
+  /// 构建topBar
+  final PreimageBarBuilder? topBarBuilder;
 
   /// 构建bottomBar
   final PreimageBarBuilder? bottomBarBuilder;
@@ -173,8 +167,8 @@ class _PreimageGalleryState extends State<PreimageGallery> {
     }
   }
 
-  Widget _buildNavigationBar(BuildContext context) {
-    return widget.navigationBarBuilder!.call(
+  Widget _buildTopBar(BuildContext context) {
+    return widget.topBarBuilder!.call(
       context,
       _currentIndex,
       widget.itemCount,
@@ -191,12 +185,12 @@ class _PreimageGalleryState extends State<PreimageGallery> {
 
   @override
   Widget build(BuildContext context) {
-    final hasNavigationBar = widget.navigationBarBuilder != null;
+    final hasTopBar = widget.topBarBuilder != null;
     final hasBottomBar = widget.bottomBarBuilder != null;
     return VertigoPreview(
       controller: _vertigoController,
       duration: widget.duration,
-      navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
+      topBarBuilder: hasTopBar ? _buildTopBar : null,
       bottomBarBuilder: hasBottomBar ? _buildBottomBar : null,
       dragDamping: widget.dragDamping,
       scaleDamping: widget.scaleDamping,

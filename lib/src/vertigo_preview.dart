@@ -190,7 +190,7 @@ class VertigoPreview extends StatefulWidget {
     Key? key,
     required this.child,
     this.controller,
-    this.navigationBarBuilder,
+    this.topBarBuilder,
     this.bottomBarBuilder,
     this.onPressed,
     this.onDoublePressed,
@@ -213,8 +213,8 @@ class VertigoPreview extends StatefulWidget {
   /// controller
   final VertigoPreviewController? controller;
 
-  /// 构建navigationBar
-  final WidgetBuilder? navigationBarBuilder;
+  /// 构建topBar
+  final WidgetBuilder? topBarBuilder;
 
   /// 构建bottomBar
   final WidgetBuilder? bottomBarBuilder;
@@ -369,14 +369,14 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     );
   }
 
-  Widget? _buildNavigationBar() {
-    if (widget.navigationBarBuilder == null) {
+  Widget? _buildTopBar() {
+    if (widget.topBarBuilder == null) {
       return null;
     }
     return Container(
       width: double.infinity,
       child: Builder(
-        builder: widget.navigationBarBuilder!,
+        builder: widget.topBarBuilder!,
       ),
     );
   }
@@ -468,7 +468,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
                     end: Alignment.bottomCenter,
                   ),
                 ),
-                child: _buildNavigationBar(),
+                child: _buildTopBar(),
               ),
             ),
           ),

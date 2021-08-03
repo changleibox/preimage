@@ -22,7 +22,7 @@ const double _dragDamping = 200;
 const Duration _kDuration = Duration(milliseconds: 300);
 
 /// 构建navigationBar
-typedef PreimageNavigationBarBuilder = Widget Function(
+typedef PreimageTopBarBuilder = Widget Function(
   BuildContext context,
   int index,
   int count,
@@ -48,7 +48,7 @@ class Preimage {
     int initialIndex = 0,
     required List<ImageOptions?>? images,
     ValueChanged<int>? onIndexChanged,
-    PreimageNavigationBarBuilder? navigationBarBuilder = _buildNavigationBar,
+    PreimageTopBarBuilder? topBarBuilder = _buildTopBar,
     PreimageBarBuilder? bottomBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
     ValueChanged<Edge>? onOverEdge,
@@ -64,7 +64,7 @@ class Preimage {
         initialIndex: initialIndex,
         images: _images.map((e) => e!).toList(),
         onIndexChanged: onIndexChanged,
-        navigationBarBuilder: navigationBarBuilder,
+        topBarBuilder: topBarBuilder,
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
         onOverEdge: onOverEdge,
@@ -77,7 +77,7 @@ class Preimage {
   static Future<T?> previewSingle<T>(
     BuildContext context,
     ImageOptions? image, {
-    PreimageNavigationBarBuilder navigationBarBuilder = _buildNavigationBar,
+    PreimageTopBarBuilder topBarBuilder = _buildTopBar,
     WidgetBuilder? bottomBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
     bool rootNavigator = false,
@@ -89,7 +89,7 @@ class Preimage {
       context,
       PreimagePage.single(
         image,
-        navigationBarBuilder: navigationBarBuilder,
+        navigationBarBuilder: topBarBuilder,
         bottomBarBuilder: bottomBarBuilder,
         onLongPressed: onLongPressed,
       ),
@@ -107,7 +107,7 @@ class Preimage {
     );
   }
 
-  static Widget _buildNavigationBar(
+  static Widget _buildTopBar(
     BuildContext context,
     int index,
     int count,
@@ -259,7 +259,7 @@ class PreimagePage extends StatefulWidget {
     this.initialIndex = 0,
     required this.images,
     this.onIndexChanged,
-    this.navigationBarBuilder,
+    this.topBarBuilder,
     this.bottomBarBuilder,
     this.onLongPressed,
     this.onOverEdge,
@@ -271,13 +271,13 @@ class PreimagePage extends StatefulWidget {
   factory PreimagePage.single(
     ImageOptions image, {
     WidgetBuilder? bottomBarBuilder,
-    PreimageNavigationBarBuilder? navigationBarBuilder,
+    PreimageTopBarBuilder? navigationBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
   }) {
     return PreimagePage(
       images: [image],
       onLongPressed: onLongPressed,
-      navigationBarBuilder: navigationBarBuilder,
+      topBarBuilder: navigationBarBuilder,
       bottomBarBuilder: bottomBarBuilder == null ? null : (context, index, count) => bottomBarBuilder(context),
     );
   }
@@ -292,7 +292,7 @@ class PreimagePage extends StatefulWidget {
   final ValueChanged<int>? onIndexChanged;
 
   /// 构建预览页面的navigationBar
-  final PreimageNavigationBarBuilder? navigationBarBuilder;
+  final PreimageTopBarBuilder? topBarBuilder;
 
   /// 构建预览页面的bottomBar
   final PreimageBarBuilder? bottomBarBuilder;
@@ -420,8 +420,8 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildNavigationBar(BuildContext context, int index, int count) {
-    return widget.navigationBarBuilder!(
+  Widget _buildTopBar(BuildContext context, int index, int count) {
+    return widget.topBarBuilder!(
       context,
       index,
       count,
@@ -475,7 +475,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final duration = _offset == 1.0 ? _kDuration : Duration.zero;
     final queryData = MediaQuery.of(context);
-    final hasNavigationBar = widget.navigationBarBuilder != null;
+    final hasTopBar = widget.topBarBuilder != null;
     return CupertinoTheme(
       data: CupertinoTheme.of(context).copyWith(
         primaryColor: CupertinoColors.white,
@@ -498,7 +498,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                   onNotification: _onScrollNotification,
                   child: PreimageGallery(
                     initialIndex: widget.initialIndex,
-                    navigationBarBuilder: hasNavigationBar ? _buildNavigationBar : null,
+                    topBarBuilder: hasTopBar ? _buildTopBar : null,
                     bottomBarBuilder: widget.bottomBarBuilder,
                     loadingBuilder: _buildLoading,
                     duration: _kDuration,
