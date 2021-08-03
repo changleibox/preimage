@@ -38,7 +38,7 @@ class _PluginExampleAppState extends State<PluginExampleApp> {
 /// 示例代码
 class PluginExamplePage extends StatefulWidget {
   static Object _buildImage(int index) {
-    if (index.isOdd) {
+    if (index % 4 == 0) {
       return VideoPlayerController.network(_testVideoUrl);
     } else {
       return _testAvatarUrl;
