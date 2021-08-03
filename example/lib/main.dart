@@ -81,16 +81,14 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
     if (isVideo) {
       final controller = image as VideoPlayerController;
       final url = controller.dataSource;
-      return ImageOptions.builder(
+      return ImageOptions.child(
         url: url,
-        builder: (context) {
-          return Prevideo(
-            controller: controller,
-            fit: BoxFit.contain,
-            usedOrigin: false,
-            heroTag: [url, index].join('_'),
-          );
-        },
+        child: Prevideo(
+          controller: controller,
+          fit: BoxFit.contain,
+          usedOrigin: false,
+          heroTag: [url, index].join('_'),
+        ),
       );
     } else {
       final url = image.toString();

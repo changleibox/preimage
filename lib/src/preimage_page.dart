@@ -127,19 +127,24 @@ class ImageOptions {
     required this.url,
     String? tag,
   })  : _tag = tag,
-        builder = null;
+        child = null,
+        childSize = null;
 
   /// 自定义child
-  const ImageOptions.builder({
+  const ImageOptions.child({
     required this.url,
-    this.builder,
+    this.child,
+    this.childSize,
   }) : _tag = null;
 
   /// 图片地址，可以是远程路径和本地路径
   final String? url;
 
   /// 构建item
-  final WidgetBuilder? builder;
+  final Widget? child;
+
+  /// childSize
+  final Size? childSize;
 
   /// hero的tag
   final String? _tag;
@@ -431,10 +436,11 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
         tag: heroTag,
       );
     }
-    final builder = imageOptions.builder;
-    if (builder != null) {
+    final child = imageOptions.child;
+    if (child != null) {
       return PhotoViewGalleryPageOptions.customChild(
-        child: builder(context),
+        child: child,
+        childSize: imageOptions.childSize,
         initialScale: PhotoViewComputedScale.contained,
         basePosition: Alignment.center,
         tightMode: true,
