@@ -8,6 +8,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:preimage/preimage.dart';
 import 'package:preimage_example/scheduler.dart';
 import 'package:video_player/video_player.dart';
 
@@ -30,6 +31,7 @@ class Prevideo extends StatefulWidget {
     Key? key,
     required this.controller,
     this.fit = BoxFit.contain,
+    this.heroTag,
     bool usedOrigin = false,
   })  : assert(controller != null),
         dataSource = null,
@@ -54,6 +56,7 @@ class Prevideo extends StatefulWidget {
     this.closedCaptionFile,
     this.videoPlayerOptions,
     this.fit = BoxFit.contain,
+    this.heroTag,
   })  : dataSourceType = DataSourceType.asset,
         formatHint = null,
         httpHeaders = const {},
@@ -78,6 +81,7 @@ class Prevideo extends StatefulWidget {
     this.videoPlayerOptions,
     this.httpHeaders = const {},
     this.fit = BoxFit.contain,
+    this.heroTag,
   })  : dataSourceType = DataSourceType.network,
         package = null,
         controller = null,
@@ -94,6 +98,7 @@ class Prevideo extends StatefulWidget {
     this.closedCaptionFile,
     this.videoPlayerOptions,
     this.fit = BoxFit.contain,
+    this.heroTag,
   })  : dataSource = 'file://${file.path}',
         dataSourceType = DataSourceType.file,
         package = null,
@@ -141,6 +146,9 @@ class Prevideo extends StatefulWidget {
 
   /// 平铺方式
   final BoxFit fit;
+
+  /// heroTag
+  final String? heroTag;
 
   @override
   _PrevideoState createState() => _PrevideoState();
@@ -230,6 +238,7 @@ class _PrevideoState extends State<Prevideo> with TickerProviderStateMixin {
           controller: _effectiveController,
           isDone: widget.controller != null || snapshot.connectionState == ConnectionState.done,
           fit: widget.fit,
+          heroTag: widget.heroTag,
         );
       },
     );
@@ -281,6 +290,7 @@ class FittedVideoPlayer extends StatelessWidget {
     required this.controller,
     required this.isDone,
     this.fit = BoxFit.contain,
+    this.heroTag,
   }) : super(key: key);
 
   /// controller
@@ -292,36 +302,50 @@ class FittedVideoPlayer extends StatelessWidget {
   /// 视频填充方式
   final BoxFit fit;
 
+  /// heroTag
+  final String? heroTag;
+
   @override
   Widget build(BuildContext context) {
     Widget child;
     if (!isDone) {
       child = const _Loading();
     } else {
-      child = Stack(
-        children: [
-          Positioned.fill(
-            child: FittedBox(
-              fit: fit,
-              alignment: Alignment.center,
-              clipBehavior: Clip.antiAlias,
-              child: SizedBox.fromSize(
-                size: controller.value.size,
-                child: VideoPlayer(controller),
+      final childSize = controller.value.size;
+      child = LayoutBuilder(
+        builder: (context, constraints) {
+          final size = constraints.constrainSizeAndAttemptToPreserveAspectRatio(childSize);
+          final destination = applyBoxFitForSize(fit, childSize, size);
+          Widget child = VideoPlayer(controller);
+          if (heroTag != null) {
+            child = PreimageHero(
+              tag: heroTag,
+              placeholderBuilder: null,
+              child: child,
+            );
+          }
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedPositioned.fromRect(
+                duration: _animationDuration,
+                rect: Alignment.center.inscribe(destination, Offset.zero & size),
+                curve: Curves.fastOutSlowIn,
+                child: child,
               ),
-            ),
-          ),
-          Positioned(
-            child: VideoBuffered(
-              controller: controller,
-            ),
-          ),
-        ],
+              VideoBuffered(
+                controller: controller,
+              ),
+            ],
+          );
+        },
       );
     }
     return AnimatedSwitcher(
       duration: _animationDuration,
-      child: child,
+      child: SizedBox.expand(
+        child: child,
+      ),
     );
   }
 }

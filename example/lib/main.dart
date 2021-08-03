@@ -77,27 +77,28 @@ class _PluginExamplePageState extends State<PluginExamplePage> {
 
   ImageOptions _buildImageOptions(int index) {
     final image = _images[index];
-    String url;
-    WidgetBuilder? builder;
     final isVideo = image is VideoPlayerController;
     if (isVideo) {
       final controller = image as VideoPlayerController;
-      url = controller.dataSource;
-      builder = (context) {
-        return Prevideo(
-          controller: controller,
-          fit: BoxFit.contain,
-          usedOrigin: false,
-        );
-      };
+      final url = controller.dataSource;
+      return ImageOptions.builder(
+        url: url,
+        builder: (context) {
+          return Prevideo(
+            controller: controller,
+            fit: BoxFit.contain,
+            usedOrigin: false,
+            heroTag: [url, index].join('_'),
+          );
+        },
+      );
     } else {
-      url = image.toString();
+      final url = image.toString();
+      return ImageOptions(
+        url: url,
+        tag: [url, index].join('_'),
+      );
     }
-    return ImageOptions(
-      url: url,
-      tag: [url, index].join('_'),
-      builder: builder,
-    );
   }
 
   @override

@@ -125,16 +125,18 @@ class ImageOptions {
   /// 图片
   const ImageOptions({
     required this.url,
-    this.thumbnailSize,
-    this.builder,
     String? tag,
-  }) : _tag = tag;
+  })  : _tag = tag,
+        builder = null;
+
+  /// 自定义child
+  const ImageOptions.builder({
+    required this.url,
+    this.builder,
+  }) : _tag = null;
 
   /// 图片地址，可以是远程路径和本地路径
   final String? url;
-
-  /// 缩略图大小
-  final Size? thumbnailSize;
 
   /// 构建item
   final WidgetBuilder? builder;
@@ -153,7 +155,6 @@ class ImageOptions {
     return ImageOptions(
       url: url ?? this.url,
       tag: tag ?? _tag,
-      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
     );
   }
 
@@ -436,7 +437,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
         child: builder(context),
         initialScale: PhotoViewComputedScale.contained,
         basePosition: Alignment.center,
-        tightMode: false,
+        tightMode: true,
         disableGestures: true,
         gestureDetectorBehavior: HitTestBehavior.translucent,
         heroAttributes: attributes,
