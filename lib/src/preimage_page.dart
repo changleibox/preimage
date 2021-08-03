@@ -32,15 +32,6 @@ typedef PreimageTopBarBuilder = Widget Function(
   VoidCallback onBackPressed,
 );
 
-/// 边界类型
-enum Edge {
-  /// 起始
-  start,
-
-  /// 结束
-  end,
-}
-
 /// 图片预览
 class Preimage {
   const Preimage._();
@@ -313,7 +304,6 @@ class PreimagePage extends StatefulWidget {
 class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   double _offset = 1.0;
-  bool _notifyOverEdge = true;
 
   @override
   void initState() {
@@ -370,35 +360,6 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
       setState(() {
         _offset = notification.offset;
       });
-    }
-    return false;
-  }
-
-  bool _onScrollNotification(ScrollNotification notification) {
-    final metrics = notification.metrics;
-    if (!metrics.hasPixels || !metrics.hasContentDimensions || widget.onOverEdge == null) {
-      _notifyOverEdge = true;
-      return false;
-    }
-    if (notification is UserScrollNotification && !metrics.outOfRange) {
-      _notifyOverEdge = true;
-    }
-    if ((notification is! ScrollUpdateNotification && notification is! OverscrollNotification) || !_notifyOverEdge) {
-      return false;
-    }
-    final pixels = metrics.pixels;
-    final minScrollExtent = metrics.minScrollExtent;
-    final maxScrollExtent = metrics.maxScrollExtent;
-    if (pixels < minScrollExtent) {
-      _notifyOverEdge = false;
-      widget.onOverEdge?.call(Edge.start);
-    } else if (pixels > maxScrollExtent) {
-      _notifyOverEdge = false;
-      widget.onOverEdge?.call(Edge.end);
-    } else if (notification is OverscrollNotification) {
-      _notifyOverEdge = false;
-      final overscroll = notification.overscroll;
-      widget.onOverEdge?.call(overscroll.isNegative ? Edge.start : Edge.end);
     }
     return false;
   }
@@ -512,24 +473,22 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
               color: CupertinoColors.black.withOpacity(_offset),
               child: NotificationListener<DragUpdateNotification>(
                 onNotification: _onDragNotification,
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: _onScrollNotification,
-                  child: PreimageGallery(
-                    initialIndex: widget.initialIndex,
-                    topBarBuilder: hasTopBar ? _buildTopBar : null,
-                    bottomBarBuilder: widget.bottomBarBuilder,
-                    loadingBuilder: _buildLoading,
-                    duration: _kDuration,
-                    dragDamping: _dragDamping,
-                    scaleDamping: queryData.size.height * 2,
-                    onPressed: _onPressed,
-                    onLongPressed: _onLongPressed,
-                    onPageChanged: _onPageChanged,
-                    onDragStartCallback: _onDragStartCallback,
-                    onDragEndCallback: _onDragEndCallback,
-                    itemCount: widget.images.length,
-                    builder: _buildPageOptions,
-                  ),
+                child: PreimageGallery(
+                  initialIndex: widget.initialIndex,
+                  topBarBuilder: hasTopBar ? _buildTopBar : null,
+                  bottomBarBuilder: widget.bottomBarBuilder,
+                  loadingBuilder: _buildLoading,
+                  duration: _kDuration,
+                  dragDamping: _dragDamping,
+                  scaleDamping: queryData.size.height * 2,
+                  onPressed: _onPressed,
+                  onLongPressed: _onLongPressed,
+                  onPageChanged: _onPageChanged,
+                  onDragStartCallback: _onDragStartCallback,
+                  onDragEndCallback: _onDragEndCallback,
+                  onOverEdge: widget.onOverEdge,
+                  itemCount: widget.images.length,
+                  builder: _buildPageOptions,
                 ),
               ),
             ),

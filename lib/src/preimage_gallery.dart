@@ -19,6 +19,15 @@ typedef PreimageBarBuilder = Widget Function(
   int count,
 );
 
+/// 边界类型
+enum Edge {
+  /// 起始
+  start,
+
+  /// 结束
+  end,
+}
+
 /// Created by box on 2020/4/21.
 ///
 /// 图片预览控件
@@ -42,6 +51,7 @@ class PreimageGallery extends StatefulWidget {
     this.duration = _kDuration,
     this.onDragStartCallback,
     this.onDragEndCallback,
+    this.onOverEdge,
   }) : super(key: key);
 
   /// 初始index
@@ -92,6 +102,9 @@ class PreimageGallery extends StatefulWidget {
   /// 拖拽结束回调
   final VertigoDragEndCallback? onDragEndCallback;
 
+  /// 超过边界回调
+  final ValueChanged<Edge>? onOverEdge;
+
   @override
   _PreimageGalleryState createState() => _PreimageGalleryState();
 }
@@ -101,6 +114,8 @@ class _PreimageGalleryState extends State<PreimageGallery> {
 
   late int _currentIndex = 0;
   late PageController _pageController;
+
+  bool _notifyOverEdge = true;
 
   @override
   void initState() {
@@ -167,6 +182,35 @@ class _PreimageGalleryState extends State<PreimageGallery> {
     }
   }
 
+  bool _onScrollNotification(ScrollNotification notification) {
+    final metrics = notification.metrics;
+    if (!metrics.hasPixels || !metrics.hasContentDimensions || widget.onOverEdge == null) {
+      _notifyOverEdge = true;
+      return false;
+    }
+    if (notification is UserScrollNotification && !metrics.outOfRange) {
+      _notifyOverEdge = true;
+    }
+    if ((notification is! ScrollUpdateNotification && notification is! OverscrollNotification) || !_notifyOverEdge) {
+      return false;
+    }
+    final pixels = metrics.pixels;
+    final minScrollExtent = metrics.minScrollExtent;
+    final maxScrollExtent = metrics.maxScrollExtent;
+    if (pixels < minScrollExtent) {
+      _notifyOverEdge = false;
+      widget.onOverEdge?.call(Edge.start);
+    } else if (pixels > maxScrollExtent) {
+      _notifyOverEdge = false;
+      widget.onOverEdge?.call(Edge.end);
+    } else if (notification is OverscrollNotification) {
+      _notifyOverEdge = false;
+      final overscroll = notification.overscroll;
+      widget.onOverEdge?.call(overscroll.isNegative ? Edge.start : Edge.end);
+    }
+    return false;
+  }
+
   Widget _buildTopBar(BuildContext context) {
     return widget.topBarBuilder!.call(
       context,
@@ -202,19 +246,22 @@ class _PreimageGalleryState extends State<PreimageGallery> {
         widget.onDragStartCallback?.call(details);
       },
       onDragEndCallback: widget.onDragEndCallback,
-      child: PhotoViewGallery.builder(
-        itemCount: widget.itemCount,
-        scrollDirection: Axis.horizontal,
-        enableRotation: true,
-        gaplessPlayback: true,
-        backgroundDecoration: BoxDecoration(
-          color: CupertinoColors.black.withOpacity(0.0),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: PhotoViewGallery.builder(
+          itemCount: widget.itemCount,
+          scrollDirection: Axis.horizontal,
+          enableRotation: true,
+          gaplessPlayback: true,
+          backgroundDecoration: BoxDecoration(
+            color: CupertinoColors.black.withOpacity(0.0),
+          ),
+          pageController: _pageController,
+          onPageChanged: _onPageChanged,
+          loadingBuilder: widget.loadingBuilder,
+          scaleStateChangedCallback: _onScaleStateChanged,
+          builder: widget.builder,
         ),
-        pageController: _pageController,
-        onPageChanged: _onPageChanged,
-        loadingBuilder: widget.loadingBuilder,
-        scaleStateChangedCallback: _onScaleStateChanged,
-        builder: widget.builder,
       ),
     );
   }
