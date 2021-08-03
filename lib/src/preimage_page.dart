@@ -339,6 +339,14 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     }
   }
 
+  void _onDragStartCallback(DragStartDetails details) {
+    if (mounted) {
+      setState(() {
+        _offset = 1.0;
+      });
+    }
+  }
+
   bool _onDragEndCallback(Offset dragDistance, double? velocity) {
     final dy = dragDistance.dy;
     velocity ??= 0;
@@ -354,13 +362,12 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     return false;
   }
 
-  bool _onDragNotification(DragNotification notification) {
-    if (notification is DragUpdateNotification) {
-      _offset = notification.offset;
-    } else if (notification is DragStartNotification) {
-      _offset = 1.0;
+  bool _onDragNotification(DragUpdateNotification notification) {
+    if (mounted) {
+      setState(() {
+        _offset = notification.offset;
+      });
     }
-    setState(() {});
     return false;
   }
 
@@ -487,7 +494,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
             child: AnimatedContainer(
               duration: duration,
               color: CupertinoColors.black.withOpacity(_offset),
-              child: NotificationListener<DragNotification>(
+              child: NotificationListener<DragUpdateNotification>(
                 onNotification: _onDragNotification,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: _onScrollNotification,
@@ -501,6 +508,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
                     onPressed: _onPressed,
                     onLongPressed: _onLongPressed,
                     onPageChanged: _onPageChanged,
+                    onDragStartCallback: _onDragStartCallback,
                     onDragEndCallback: _onDragEndCallback,
                     itemCount: widget.images.length,
                     builder: _buildPageOptions,

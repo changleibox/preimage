@@ -113,6 +113,11 @@ class DragEndNotification extends DragNotification {
 }
 
 /// 拖拽结束回调
+typedef VertigoDragStartCallback = void Function(
+  DragStartDetails details,
+);
+
+/// 拖拽结束回调
 typedef VertigoDragEndCallback = bool Function(
   Offset dragDistance,
   double? velocity,
@@ -152,6 +157,7 @@ class VertigoPreview extends StatefulWidget {
     this.onLongPressed,
     this.dampingDistance,
     this.duration = _kDuration,
+    this.onDragStartCallback,
     this.onDragEndCallback,
     this.enabled = true,
   }) : super(key: key);
@@ -182,6 +188,9 @@ class VertigoPreview extends StatefulWidget {
 
   /// 页面可动元素的动画时长
   final Duration duration;
+
+  /// 拖动开始回调
+  final VertigoDragStartCallback? onDragStartCallback;
 
   /// 拖拽结束回调
   final VertigoDragEndCallback? onDragEndCallback;
@@ -223,6 +232,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
+    widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
     DragStartNotification(details: details).dispatch(context);
   }

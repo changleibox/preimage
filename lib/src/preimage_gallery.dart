@@ -45,6 +45,7 @@ class PreimageGallery extends StatefulWidget {
     this.loadingBuilder,
     this.dampingDistance,
     this.duration = _kDuration,
+    this.onDragStartCallback,
     this.onDragEndCallback,
   }) : super(key: key);
 
@@ -86,6 +87,9 @@ class PreimageGallery extends StatefulWidget {
 
   /// 页面可动元素的动画时长
   final Duration duration;
+
+  /// 拖动开始回调
+  final VertigoDragStartCallback? onDragStartCallback;
 
   /// 拖拽结束回调
   final VertigoDragEndCallback? onDragEndCallback;
@@ -195,35 +199,33 @@ class _PreimageGalleryState extends State<PreimageGallery> {
   Widget build(BuildContext context) {
     final navigationBar = _buildNavigationBar(context);
     final bottomBar = _buildBottomBar(context);
-    return NotificationListener<DragStartNotification>(
-      onNotification: (notification) {
+    return VertigoPreview(
+      controller: _vertigoController,
+      duration: widget.duration,
+      navigationBarBuilder: navigationBar == null ? null : (context) => navigationBar,
+      bottomBarBuilder: bottomBar == null ? null : (context) => bottomBar,
+      dampingDistance: widget.dampingDistance,
+      onPressed: _onTap,
+      onDoublePressed: _onDoubleTap,
+      onLongPressed: _onLongPress,
+      onDragStartCallback: (details) {
         _pageController.jumpToPage(_currentIndex);
-        return false;
+        widget.onDragStartCallback?.call(details);
       },
-      child: VertigoPreview(
-        controller: _vertigoController,
-        duration: widget.duration,
-        navigationBarBuilder: navigationBar == null ? null : (context) => navigationBar,
-        bottomBarBuilder: bottomBar == null ? null : (context) => bottomBar,
-        onDragEndCallback: widget.onDragEndCallback,
-        dampingDistance: widget.dampingDistance,
-        onPressed: _onTap,
-        onDoublePressed: _onDoubleTap,
-        onLongPressed: _onLongPress,
-        child: PhotoViewGallery.builder(
-          itemCount: widget.itemCount,
-          scrollDirection: Axis.horizontal,
-          enableRotation: true,
-          gaplessPlayback: true,
-          backgroundDecoration: BoxDecoration(
-            color: CupertinoColors.black.withOpacity(0.0),
-          ),
-          pageController: _pageController,
-          onPageChanged: _onPageChanged,
-          loadingBuilder: widget.loadingBuilder,
-          scaleStateChangedCallback: _onScaleStateChanged,
-          builder: widget.builder,
+      onDragEndCallback: widget.onDragEndCallback,
+      child: PhotoViewGallery.builder(
+        itemCount: widget.itemCount,
+        scrollDirection: Axis.horizontal,
+        enableRotation: true,
+        gaplessPlayback: true,
+        backgroundDecoration: BoxDecoration(
+          color: CupertinoColors.black.withOpacity(0.0),
         ),
+        pageController: _pageController,
+        onPageChanged: _onPageChanged,
+        loadingBuilder: widget.loadingBuilder,
+        scaleStateChangedCallback: _onScaleStateChanged,
+        builder: widget.builder,
       ),
     );
   }
