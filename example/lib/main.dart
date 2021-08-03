@@ -1,44 +1,209 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:preimage/preimage.dart';
+import 'package:video_player/video_player.dart';
 
 const String _testAvatarUrl = 'http://img.netbian.com/file/2020/1126/d80fba29d14a4dc832b73db9686d1fdd.jpg';
 
+/// 测试视频（人类清除计划）
+const String _testVideoUrl = 'https://vod4.buycar5.cn/20210718/lx14hBDC/index.m3u8';
+
 void main() {
-  runApp(MyApp());
+  runApp(PluginExampleApp());
 }
 
 /// app
-class MyApp extends StatefulWidget {
+class PluginExampleApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _PluginExampleAppState createState() => _PluginExampleAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _PluginExampleAppState extends State<PluginExampleApp> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: _PluginExamplePage(),
+      home: PluginExamplePage(),
     );
   }
 }
 
-class _PluginExamplePage extends StatelessWidget {
-  final _images = List.generate(10, _builderImage);
+/// 示例代码
+class PluginExamplePage extends StatefulWidget {
+  static Object _buildImage(int index) {
+    if (index.isOdd) {
+      return VideoPlayerController.network(_testVideoUrl);
+    } else {
+      return _testAvatarUrl;
+    }
+  }
 
-  static ImageOptions _builderImage(int index) {
-    return ImageOptions(
-      url: _testAvatarUrl,
-      tag: [_testAvatarUrl, index].join('_'),
+  @override
+  _PluginExamplePageState createState() => _PluginExamplePageState();
+}
+
+class _PluginExamplePageState extends State<PluginExamplePage> {
+  final _images = List.generate(10, PluginExamplePage._buildImage);
+
+  @override
+  void dispose() {
+    _images.whereType<VideoPlayerController>().forEach((element) => element.dispose());
+    super.dispose();
+  }
+
+  void _onPreviewPressed(int initialIndex) {
+    Preimage.preview<void>(
+      context,
+      images: List.generate(_images.length, _buildImageOptions),
+      initialIndex: initialIndex,
+      bottomBarBuilder: (context, index, count) {
+        return BottomBar(
+          index: index,
+          count: count,
+        );
+      },
+      onOverEdge: (value) {
+        print(value);
+      },
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, int index, int count) {
+  ImageOptions _buildImageOptions(int index) {
+    final image = _images[index];
+    String url;
+    WidgetBuilder? builder;
+    final isVideo = image is VideoPlayerController;
+    if (isVideo) {
+      final controller = image as VideoPlayerController;
+      url = controller.dataSource;
+      builder = (context) {
+        return VideoPlayerAvatar(
+          controller: controller,
+          fit: BoxFit.contain,
+          isAutoPlay: true,
+        );
+      };
+    } else {
+      url = image.toString();
+    }
+    return ImageOptions(
+      url: url,
+      tag: [url, index].join('_'),
+      builder: builder,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Plugin example app'),
+      ),
+      child: Builder(
+        builder: (context) {
+          final padding = MediaQuery.of(context).padding;
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
+            padding: const EdgeInsets.all(15) + padding,
+            itemCount: _images.length,
+            itemBuilder: (context, index) {
+              return CupertinoButton(
+                borderRadius: BorderRadius.zero,
+                padding: EdgeInsets.zero,
+                minSize: 0,
+                onPressed: () {
+                  _onPreviewPressed(index);
+                },
+                child: _Avatar(
+                  image: _images[index],
+                  index: index,
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({
+    Key? key,
+    required this.image,
+    required this.index,
+  }) : super(key: key);
+
+  final Object image;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    String url;
+    Widget child;
+    if (image is VideoPlayerController) {
+      final controller = image as VideoPlayerController;
+      url = controller.dataSource;
+      child = VideoPlayerAvatar(
+        controller: controller,
+        fit: BoxFit.cover,
+      );
+    } else {
+      url = image.toString();
+      child = CachedNetworkImage(
+        imageUrl: image.toString(),
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+    return PreimageHero(
+      tag: [url, index].join('_'),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(
+            color: CupertinoColors.separator,
+            width: 0,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: child,
+      ),
+    );
+  }
+}
+
+/// 底部操作蓝
+class BottomBar extends StatelessWidget {
+  /// 构造函数
+  const BottomBar({
+    Key? key,
+    required this.index,
+    required this.count,
+  }) : super(key: key);
+
+  /// 当前索引
+  final int index;
+
+  /// 总数量
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
     if (index % 4 == 1) {
       return const SizedBox.shrink();
     }
+    final size = MediaQuery.of(context).size;
     return Container(
-      height: index.isEven ? null : MediaQuery.of(context).size.height / 2,
+      height: index.isEven ? null : size.height / 2,
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 10,
@@ -72,54 +237,149 @@ class _PluginExamplePage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 预览item
+class VideoPlayerAvatar extends StatefulWidget {
+  /// 构造函数
+  const VideoPlayerAvatar({
+    Key? key,
+    required this.controller,
+    this.fit = BoxFit.contain,
+    this.isAutoPlay = false,
+  }) : super(key: key);
+
+  /// controller
+  final VideoPlayerController controller;
+
+  /// 填充方式
+  final BoxFit fit;
+
+  /// 是否自动播放
+  final bool isAutoPlay;
+
+  @override
+  _VideoPlayerAvatarState createState() => _VideoPlayerAvatarState();
+}
+
+class _VideoPlayerAvatarState extends State<VideoPlayerAvatar> {
+  late final VideoPlayerController _controller;
+  late final VideoPlayerValue _parentValue;
+
+  Future<void>? _initializeFuture;
+
+  @override
+  void initState() {
+    _initializeController();
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoPlayerAvatar oldWidget) {
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_onChanged);
+      _initializeController();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void _initializeController() {
+    _controller = widget.controller;
+    _controller.addListener(_onChanged);
+    _parentValue = _controller.value;
+    if (!_parentValue.isInitialized) {
+      _initializeFuture = _controller.initialize()..whenComplete(_onInitialized);
+    } else {
+      _onInitialized();
+    }
+  }
+
+  void _onInitialized() {
+    if (widget.isAutoPlay && mounted) {
+      _controller.play();
+    }
+  }
+
+  Future<void> _onDisposed() async {
+    if (!widget.isAutoPlay) {
+      return;
+    }
+    _controller.value = _parentValue;
+    await _controller.pause();
+    await _controller.seekTo(Duration.zero);
+  }
+
+  @override
+  void deactivate() {
+    _onDisposed();
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    void callback([dynamic value]) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    }
+
+    if (SchedulerBinding.instance!.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance!.addPostFrameCallback(callback);
+    } else {
+      callback();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Plugin example app'),
-      ),
-      child: Center(
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: _images.length,
-          itemBuilder: (context, index) {
-            final image = _images[index];
-            return KeyedSubtree(
-              key: ObjectKey(image.url),
-              child: CupertinoButton(
-                borderRadius: BorderRadius.zero,
-                padding: EdgeInsets.zero,
-                minSize: 0,
-                onPressed: () {
-                  Preimage.preview<void>(
-                    context,
-                    images: _images,
-                    initialIndex: index,
-                    bottomBarBuilder: _buildBottomBar,
-                    onOverEdge: (value) {
-                      print(value);
-                    },
-                  );
-                },
-                child: PreimageHero(
-                  tag: [image.url, index].join('_'),
-                  child: CachedNetworkImage(
-                    imageUrl: image.url ?? '',
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
+    return FutureBuilder(
+      future: _initializeFuture,
+      builder: (context, snapshot) {
+        Widget child;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          child = const Center(
+            child: CupertinoActivityIndicator(),
+          );
+        } else {
+          child = Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: FittedBox(
+                  fit: widget.fit,
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.antiAlias,
+                  child: SizedBox.fromSize(
+                    size: _controller.value.size,
+                    child: VideoPlayer(_controller),
                   ),
                 ),
               ),
-            );
-          },
-        ),
-      ),
+              if (!_controller.value.isPlaying)
+                const Positioned(
+                  child: Icon(
+                    CupertinoIcons.play_circle_fill,
+                    color: Colors.black26,
+                    size: 56,
+                  ),
+                ),
+            ],
+          );
+        }
+        return AnimatedSwitcher(
+          duration: const Duration(
+            milliseconds: 300,
+          ),
+          child: child,
+        );
+      },
     );
   }
 }
