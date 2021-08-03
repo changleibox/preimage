@@ -268,7 +268,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void initState() {
     widget.controller?._state = this;
     _animationController = AnimationController(
-      duration: _kDuration,
+      duration: widget.duration,
       vsync: this,
     );
     _animation = CurvedAnimation(
