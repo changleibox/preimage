@@ -338,7 +338,10 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     }
     final status = _routeAnimation?.status;
     if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
-      return _routeAnimation!;
+      return _routeAnimation!.drive(Tween<double>(
+        begin: 0,
+        end: _animation.value,
+      ));
     } else {
       return _animation;
     }
