@@ -4,7 +4,7 @@
 
 library preimage;
 
-export 'src/preimage_gallery.dart' show Edge;
+export 'src/preimage_gallery.dart' show Edge, PreimageBarBuilder;
 export 'src/preimage_page.dart' show Preimage, PreimageTopBarBuilder, ImageOptions, PreimageHero;
 export 'src/preimage_route.dart';
 export 'src/primitive_navigation_bar.dart';
