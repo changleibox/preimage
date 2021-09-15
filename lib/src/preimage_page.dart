@@ -71,7 +71,7 @@ class Preimage {
   static Future<T?> previewSingle<T>(
     BuildContext context,
     ImageOptions? image, {
-    PreimageTopBarBuilder topBarBuilder = _buildTopBar,
+    PreimageTopBarBuilder? topBarBuilder = _buildTopBar,
     WidgetBuilder? bottomBarBuilder,
     ValueChanged<ImageOptions>? onLongPressed,
     bool rootNavigator = false,
