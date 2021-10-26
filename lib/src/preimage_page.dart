@@ -382,7 +382,7 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
     if (offset != null) {
       child = CupertinoActivityIndicator.partiallyRevealed(
         radius: 14,
-        progress: offset,
+        progress: offset.clamp(0, 1).toDouble(),
       );
     }
     return Center(
