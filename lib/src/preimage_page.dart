@@ -372,9 +372,9 @@ class _PreimagePageState extends State<PreimagePage> with SingleTickerProviderSt
 
   Widget _buildLoading(BuildContext context, ImageChunkEvent? event) {
     double? offset;
-    if (event != null) {
-      final totalBytes = event.expectedTotalBytes ?? 1;
-      offset = event.cumulativeBytesLoaded.toDouble() / totalBytes.toDouble();
+    final totalBytes = event?.expectedTotalBytes ?? 1.0;
+    if (event != null && totalBytes != 0) {
+      offset = event.cumulativeBytesLoaded.toDouble() / totalBytes;
     }
     Widget child = const CupertinoActivityIndicator(
       radius: 14,
