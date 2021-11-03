@@ -293,6 +293,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   late Offset _dragDistance;
 
   Animation<double>? _routeAnimation;
+  bool _dragTracking = false;
 
   @override
   void initState() {
@@ -350,6 +351,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragStart(DragStartDetails details) {
     widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
+    _dragTracking = _actualAnimation.value != 0;
     _notify();
     DragStartNotification(
       details: details,
@@ -359,8 +361,10 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     _dragDistance = details.localPosition - _startPosition;
 
-    final damping = _dragDistance.dy.abs() / widget.dragDamping;
-    _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
+    if (_dragTracking) {
+      final damping = _dragDistance.dy.abs() / widget.dragDamping;
+      _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
+    }
     _notify();
     DragUpdateNotification(
       details: details,
@@ -373,7 +377,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity;
     final onDragEndCallback = widget.onDragEndCallback;
-    _display(onDragEndCallback?.call(_dragDistance, velocity) != true);
+    final display = onDragEndCallback?.call(_dragDistance, velocity) != true;
+    _display(display && _dragTracking);
     DragEndNotification(
       details: details,
     ).dispatch(context);
@@ -382,6 +387,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _display(bool value) {
     _startPosition = Offset.zero;
     _dragDistance = Offset.zero;
+    _dragTracking = false;
     if (value) {
       _animationController.forward();
     } else {
