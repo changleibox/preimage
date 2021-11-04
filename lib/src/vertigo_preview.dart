@@ -308,26 +308,27 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       curve: Curves.fastOutSlowIn,
       reverseCurve: Curves.fastOutSlowIn,
     );
+    _animation.addStatusListener(_onAnimationStatusChanged);
     _display(true);
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
-    _routeAnimation?.removeStatusListener(_onRouteAnimationStatusChanged);
+    _routeAnimation?.removeStatusListener(_onAnimationStatusChanged);
     _routeAnimation = ModalRoute.of(context)?.animation;
-    _routeAnimation?.addStatusListener(_onRouteAnimationStatusChanged);
+    _routeAnimation?.addStatusListener(_onAnimationStatusChanged);
     super.didChangeDependencies();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _routeAnimation?.removeStatusListener(_onRouteAnimationStatusChanged);
+    _routeAnimation?.removeStatusListener(_onAnimationStatusChanged);
     super.dispose();
   }
 
-  void _onRouteAnimationStatusChanged(AnimationStatus status) {
+  void _onAnimationStatusChanged(AnimationStatus status) {
     if (!mounted) {
       return;
     }
@@ -335,17 +336,14 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   }
 
   Animation<double> get _actualAnimation {
-    if (_animationController.isAnimating) {
+    final routeAnimation = _routeAnimation;
+    if (routeAnimation == null || routeAnimation.isCompleted || routeAnimation.isDismissed) {
       return _animation;
-    }
-    final status = _routeAnimation?.status;
-    if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
-      return _routeAnimation!.drive(Tween<double>(
-        begin: 0,
-        end: _animation.value,
-      ));
     } else {
-      return _animation;
+      return routeAnimation.drive(Tween<double>(
+        begin: 0,
+        end: routeAnimation.status == AnimationStatus.forward ? 1 : _animation.value,
+      ));
     }
   }
 
@@ -390,12 +388,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       _animationController.forward();
     } else {
       _animationController.reverse().whenCompleteOrCancel(() {
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _dragTracking = value;
-        });
+        _dragTracking = value;
       });
     }
     _notify();
@@ -449,48 +442,51 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
       duration = widget.duration;
     }
     final overlayBarAnimation = _dragTracking ? _actualAnimation : _stoppedZeroAnimation;
-    return GestureDetector(
-      behavior: widget.behavior,
-      dragStartBehavior: widget.dragStartBehavior,
-      onVerticalDragStart: widget.enabled ? _onVerticalDragStart : null,
-      onVerticalDragUpdate: widget.enabled ? _onVerticalDragUpdate : null,
-      onVerticalDragEnd: widget.enabled ? _onVerticalDragEnd : null,
-      onLongPress: widget.onLongPressed,
-      onDoubleTap: widget.onDoublePressed,
-      onTap: widget.onPressed,
-      child: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          AnimatedContainer(
-            transform: _transform,
-            duration: duration,
-            curve: Curves.fastOutSlowIn,
-            child: _VertigoPreviewScope(
-              animation: _actualAnimation,
-              startPosition: _startPosition,
-              dragDistance: _dragDistance,
-              child: widget.child,
+    return IgnorePointer(
+      ignoring: !_actualAnimation.isCompleted && !_actualAnimation.isDismissed,
+      child: GestureDetector(
+        behavior: widget.behavior,
+        dragStartBehavior: widget.dragStartBehavior,
+        onVerticalDragStart: widget.enabled ? _onVerticalDragStart : null,
+        onVerticalDragUpdate: widget.enabled ? _onVerticalDragUpdate : null,
+        onVerticalDragEnd: widget.enabled ? _onVerticalDragEnd : null,
+        onLongPress: widget.onLongPressed,
+        onDoubleTap: widget.onDoublePressed,
+        onTap: widget.onPressed,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            AnimatedContainer(
+              transform: _transform,
+              duration: duration,
+              curve: Curves.fastOutSlowIn,
+              child: _VertigoPreviewScope(
+                animation: _actualAnimation,
+                startPosition: _startPosition,
+                dragDistance: _dragDistance,
+                child: widget.child,
+              ),
             ),
-          ),
-          Positioned.fill(
-            top: null,
-            child: _AnimatedOverlayBar(
-              animation: overlayBarAnimation,
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              child: _buildBottomBar(),
+            Positioned.fill(
+              top: null,
+              child: _AnimatedOverlayBar(
+                animation: overlayBarAnimation,
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                child: _buildBottomBar(),
+              ),
             ),
-          ),
-          Positioned.fill(
-            bottom: null,
-            child: _AnimatedOverlayBar(
-              animation: overlayBarAnimation,
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              child: _buildTopBar(),
+            Positioned.fill(
+              bottom: null,
+              child: _AnimatedOverlayBar(
+                animation: overlayBarAnimation,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                child: _buildTopBar(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
