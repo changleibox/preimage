@@ -385,20 +385,18 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _display(bool value) {
     _startPosition = Offset.zero;
     _dragDistance = Offset.zero;
-    TickerFuture tickerFuture;
     if (value) {
-      tickerFuture = _animationController.forward();
+      _animationController.forward();
     } else {
-      tickerFuture = _animationController.reverse();
-    }
-    tickerFuture.whenComplete(() {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _dragTracking = value;
+      _animationController.reverse().whenComplete(() {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _dragTracking = value;
+        });
       });
-    });
+    }
     _notify();
   }
 
