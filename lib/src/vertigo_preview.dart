@@ -13,6 +13,7 @@ const Duration _kDuration = Duration(
 );
 const _dragDamping = 200.0;
 const _scaleDamping = 400.0;
+const _stoppedZeroAnimation = AlwaysStoppedAnimation<double>(0.0);
 
 /// 拖拽通知
 class DragNotification extends Notification {}
@@ -293,7 +294,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   late Offset _dragDistance;
 
   Animation<double>? _routeAnimation;
-  bool _dragTracking = false;
+  bool _dragTracking = true;
 
   @override
   void initState() {
@@ -351,7 +352,6 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragStart(DragStartDetails details) {
     widget.onDragStartCallback?.call(details);
     _startPosition = details.localPosition;
-    _dragTracking = _actualAnimation.value != 0;
     _notify();
     DragStartNotification(
       details: details,
@@ -361,10 +361,8 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     _dragDistance = details.localPosition - _startPosition;
 
-    if (_dragTracking) {
-      final damping = _dragDistance.dy.abs() / widget.dragDamping;
-      _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
-    }
+    final damping = _dragDistance.dy.abs() / widget.dragDamping;
+    _animationController.value = 1.0 - damping.clamp(0.0, 1.0);
     _notify();
     DragUpdateNotification(
       details: details,
@@ -378,7 +376,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     final velocity = details.primaryVelocity;
     final onDragEndCallback = widget.onDragEndCallback;
     final display = onDragEndCallback?.call(_dragDistance, velocity) != true;
-    _display(display && _dragTracking);
+    _display(display & _dragTracking);
     DragEndNotification(
       details: details,
     ).dispatch(context);
@@ -387,7 +385,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
   void _display(bool value) {
     _startPosition = Offset.zero;
     _dragDistance = Offset.zero;
-    _dragTracking = false;
+    _dragTracking = value;
     if (value) {
       _animationController.forward();
     } else {
@@ -443,6 +441,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
     if (MatrixUtils.getAsTranslation(_transform) == Offset.zero) {
       duration = widget.duration;
     }
+    final overlayBarAnimation = _dragTracking ? _actualAnimation : _stoppedZeroAnimation;
     return GestureDetector(
       behavior: widget.behavior,
       dragStartBehavior: widget.dragStartBehavior,
@@ -469,7 +468,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
           Positioned.fill(
             top: null,
             child: _AnimatedOverlayBar(
-              animation: _actualAnimation,
+              animation: overlayBarAnimation,
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               child: _buildBottomBar(),
@@ -478,7 +477,7 @@ class _VertigoPreviewState extends State<VertigoPreview> with TickerProviderStat
           Positioned.fill(
             bottom: null,
             child: _AnimatedOverlayBar(
-              animation: _actualAnimation,
+              animation: overlayBarAnimation,
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               child: _buildTopBar(),
