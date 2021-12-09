@@ -2,8 +2,6 @@
  * Copyright (c) 2021 CHANGLEI. All rights reserved.
  */
 
-import 'dart:ui';
-
 import 'package:flutter/scheduler.dart';
 
 /// Created by changlei on 2021/8/3.

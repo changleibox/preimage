@@ -7,7 +7,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:preimage/preimage.dart';
 import 'package:preimage_example/scheduler.dart';
 import 'package:video_player/video_player.dart';
