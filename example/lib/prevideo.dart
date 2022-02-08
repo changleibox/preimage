@@ -276,6 +276,13 @@ class _PrevideoState extends State<Prevideo> with TickerProviderStateMixin {
           videoPlayerOptions: widget.videoPlayerOptions,
         );
         break;
+      case DataSourceType.contentUri:
+        controller = VideoPlayerController.contentUri(
+          Uri.parse(widget.dataSource!),
+          closedCaptionFile: widget.closedCaptionFile,
+          videoPlayerOptions: widget.videoPlayerOptions,
+        );
+        break;
     }
     return controller;
   }
@@ -523,6 +530,13 @@ VideoPlayerController? _wrapController(VideoPlayerController? origin) {
     case DataSourceType.file:
       controller = VideoPlayerController.file(
         File.fromUri(Uri.parse(origin.dataSource)),
+        closedCaptionFile: origin.closedCaptionFile,
+        videoPlayerOptions: origin.videoPlayerOptions,
+      );
+      break;
+    case DataSourceType.contentUri:
+      controller = VideoPlayerController.contentUri(
+        Uri.parse(origin.dataSource),
         closedCaptionFile: origin.closedCaptionFile,
         videoPlayerOptions: origin.videoPlayerOptions,
       );
